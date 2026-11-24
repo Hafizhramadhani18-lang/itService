@@ -3,12 +3,12 @@
 @section('title', 'Ruang Kerja Asisten AI & SOP IT Support')
 
 @section('content')
-<div class="space-y-4">
+<div class="space-y-3 flex-1 flex flex-col min-h-0">
 
     <!-- Header: Judul di Kiri, Tombol Aksi & Widget Tanggal/Notifikasi di Kanan -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 flex-shrink-0">
         <div>
-            <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200/80 text-[10px] font-extrabold text-teal-800 mb-1.5">
+            <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200/80 text-[10px] font-extrabold text-teal-800 mb-1">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500 animate-pulse"></i>
                 <span>Ruang Kerja Asisten AI IT Support PT S2P PLTU Karangkandri</span>
             </div>
@@ -38,8 +38,8 @@
     <!-- Alert Notifikasi Flash -->
     @include('partials.flash-messages')
 
-    <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN (Tinggi pas, tidak memanjang ke bawah) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch h-[calc(100vh-17.5rem)] min-h-[500px]">
+    <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN (Tinggi pas 1 layar, tidak memanjang ke bawah) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-[480px] max-h-[600px]">
         
         <!-- ============================================================== -->
         <!-- KOLOM KIRI (7-8 Kolom): RUANG KERJA ASISTEN AI IT INTERAKTIF  -->

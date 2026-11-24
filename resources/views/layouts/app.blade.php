@@ -672,7 +672,7 @@
             </script>
 
             <!-- Page Body Content -->
-            <main class="flex-1 p-6 sm:p-8 max-w-7xl w-full">
+            <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full {{ request()->routeIs('knowledge.*') ? 'flex flex-col' : '' }}">
                 @yield('content')
             </main>
 
