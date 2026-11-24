@@ -65,13 +65,17 @@
             background: #94a3b8;
         }
 
-        /* Smooth Collapsible Sidebar */
+        /* Smooth Fluid Collapsible Sidebar & Content */
         #sidebar {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
             will-change: transform;
         }
         #main-content-wrapper {
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: margin-left 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: margin-left;
+        }
+        #main-content-wrapper main {
+            transition: max-width 0.35s cubic-bezier(0.25, 1, 0.5, 1), padding-left 0.35s cubic-bezier(0.25, 1, 0.5, 1), padding-right 0.35s cubic-bezier(0.25, 1, 0.5, 1);
         }
         @media (min-width: 768px) {
             #sidebar.sidebar-collapsed {
@@ -81,7 +85,9 @@
                 margin-left: 0 !important;
             }
             #main-content-wrapper.sidebar-collapsed main {
-                padding-left: 5.5rem !important;
+                max-width: 100% !important;
+                padding-left: 5rem !important;
+                padding-right: 2rem !important;
             }
         }
     </style>
@@ -630,11 +636,41 @@
             <button type="button" 
                     id="btn-sidebar-reopen" 
                     onclick="toggleSidebar()" 
-                    class="hidden fixed top-5 left-5 z-40 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white border border-slate-700/80 shadow-xl transition-all duration-200 cursor-pointer items-center space-x-2 group focus:outline-none"
-                    title="Buka Menu Sidebar (Garis 3)">
+                    class="fixed top-4 left-4 sm:top-5 sm:left-5 z-40 px-3.5 py-2 rounded-xl bg-[#0e1a2b]/95 hover:bg-[#152438] text-white border border-slate-700/80 shadow-2xl transition-all duration-300 cursor-pointer items-center space-x-2 group focus:outline-none backdrop-blur-md opacity-0 pointer-events-none -translate-x-4 inline-flex"
+                    title="Buka Menu Sidebar (Garis 3 / Ctrl+B)">
                 <i class="fa-solid fa-bars text-sm text-teal-400 group-hover:text-teal-300 transition"></i>
                 <span class="text-xs font-bold text-slate-200 group-hover:text-white transition">Menu</span>
             </button>
+
+            <!-- Floating Tombol Logout saat Sidebar Tersembunyi (Pojok Bawah Kiri) -->
+            <div id="floating-collapsed-logout" 
+                 class="fixed bottom-5 left-4 sm:bottom-6 sm:left-5 z-40 transition-all duration-300 opacity-0 pointer-events-none -translate-x-4">
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" 
+                            class="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-[#0e1a2b]/95 hover:bg-rose-950/90 text-white hover:text-rose-200 border border-slate-700/80 hover:border-rose-600/60 shadow-2xl text-xs font-bold transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-rose-500/50 backdrop-blur-md"
+                            title="Keluar dari Akun (Logout)">
+                        <i class="fa-solid fa-arrow-right-from-bracket text-rose-400 group-hover:translate-x-0.5 transition-transform text-xs"></i>
+                        <span>Keluar</span>
+                    </button>
+                </form>
+            </div>
+
+            <script>
+                // Instant load buttons state if sidebar is initially collapsed
+                if (window.innerWidth >= 768 && localStorage.getItem('sidebar_collapsed_pref') === '1') {
+                    const rBtn = document.getElementById('btn-sidebar-reopen');
+                    const fLog = document.getElementById('floating-collapsed-logout');
+                    if (rBtn) {
+                        rBtn.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        rBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                    }
+                    if (fLog) {
+                        fLog.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        fLog.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                    }
+                }
+            </script>
 
             <!-- Page Body Content -->
             <main class="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
@@ -665,6 +701,7 @@
             const sidebar = document.getElementById('sidebar');
             const wrapper = document.getElementById('main-content-wrapper');
             const reopenBtn = document.getElementById('btn-sidebar-reopen');
+            const floatingLogout = document.getElementById('floating-collapsed-logout');
             const overlay = document.getElementById('sidebar-overlay');
             if (!sidebar) return;
 
@@ -686,11 +723,21 @@
                 
                 if (reopenBtn) {
                     if (isCollapsed) {
-                        reopenBtn.classList.remove('hidden');
-                        reopenBtn.classList.add('inline-flex');
+                        reopenBtn.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        reopenBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                     } else {
-                        reopenBtn.classList.add('hidden');
-                        reopenBtn.classList.remove('inline-flex');
+                        reopenBtn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                        reopenBtn.classList.add('opacity-0', 'pointer-events-none', '-translate-x-4');
+                    }
+                }
+
+                if (floatingLogout) {
+                    if (isCollapsed) {
+                        floatingLogout.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        floatingLogout.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                    } else {
+                        floatingLogout.classList.remove('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                        floatingLogout.classList.add('opacity-0', 'pointer-events-none', '-translate-x-4');
                     }
                 }
 
@@ -707,13 +754,18 @@
                     const sidebar = document.getElementById('sidebar');
                     const wrapper = document.getElementById('main-content-wrapper');
                     const reopenBtn = document.getElementById('btn-sidebar-reopen');
+                    const floatingLogout = document.getElementById('floating-collapsed-logout');
 
                     if (pref === '1' && sidebar) {
                         sidebar.classList.add('sidebar-collapsed');
                         if (wrapper) wrapper.classList.add('sidebar-collapsed');
                         if (reopenBtn) {
-                            reopenBtn.classList.remove('hidden');
-                            reopenBtn.classList.add('inline-flex');
+                            reopenBtn.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                            reopenBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                        }
+                        if (floatingLogout) {
+                            floatingLogout.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                            floatingLogout.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                         }
                     }
                 } catch (e) {}
