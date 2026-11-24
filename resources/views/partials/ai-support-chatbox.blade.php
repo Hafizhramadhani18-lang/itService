@@ -1,0 +1,561 @@
+<!-- ============================================================== -->
+<!-- WIDGET FLOATING: WHATSAPP AI CHATBOX & VIRTUAL IT SUPPORT     -->
+<!-- Standar Layanan IT Support PT S2P PLTU Karangkandri (24/7)     -->
+<!-- ============================================================== -->
+
+<div id="ai-chatbox-container" class="relative">
+
+    <!-- FLOATING TRIGGER BUTTON (Pojok Kanan Bawah) -->
+    <button type="button" 
+            id="btn-open-ai-chat" 
+            onclick="toggleAIChatbox()" 
+            class="fixed bottom-6 right-6 z-50 flex items-center space-x-2.5 px-4 py-3 rounded-full bg-gradient-to-r from-emerald-600 via-teal-700 to-[#0e1a2b] hover:from-emerald-500 hover:to-teal-800 text-white shadow-xl hover:shadow-2xl transition-all duration-300 group cursor-pointer focus:outline-none focus:ring-4 focus:ring-emerald-500/30"
+            title="Buka Asisten AI IT Support & WhatsApp Helpdesk (24/7)">
+        
+        <!-- Animated Pulse Status Dot -->
+        <span class="relative flex h-3.5 w-3.5 flex-shrink-0">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-400 border-2 border-white"></span>
+        </span>
+
+        <!-- Icon WhatsApp & Robot Spark -->
+        <div class="flex items-center space-x-1.5">
+            <i class="fa-brands fa-whatsapp text-lg text-emerald-300 group-hover:scale-110 transition-transform"></i>
+            <i class="fa-solid fa-wand-magic-sparkles text-xs text-amber-300"></i>
+        </div>
+
+        <!-- Label -->
+        <div class="text-left leading-tight hidden sm:block">
+            <div class="text-xs font-black tracking-wide text-white">Tanya AI Support</div>
+            <div class="text-[9px] text-teal-200 font-medium">Bantuan Cepat & WA 24/7</div>
+        </div>
+    </button>
+
+    <!-- CHATBOX WINDOW POPUP -->
+    <div id="ai-chatbox-window" 
+         class="fixed bottom-20 right-4 sm:right-6 w-[calc(100vw-2rem)] sm:w-[410px] max-w-[420px] h-[580px] bg-white rounded-3xl shadow-2xl border border-slate-200/90 z-50 flex flex-col overflow-hidden transition-all duration-300 opacity-0 pointer-events-none translate-y-4">
+        
+        <!-- HEADER CHAT (WhatsApp / Navy S2P Theme) -->
+        <div class="bg-[#0e1a2b] text-white px-4 py-3.5 border-b border-slate-800 flex items-center justify-between select-none">
+            <div class="flex items-center space-x-3 min-w-0">
+                <div class="relative flex-shrink-0">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow-sm font-black text-sm">
+                        <i class="fa-solid fa-robot text-base"></i>
+                    </div>
+                    <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-[#0e1a2b] rounded-full"></span>
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center space-x-1.5">
+                        <h3 class="font-extrabold text-xs text-white truncate">Virtual IT Support</h3>
+                        <span class="px-1.5 py-0.2 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">AI</span>
+                    </div>
+                    <p class="text-[10px] text-slate-300 truncate">PT S2P PLTU Karangkandri &bull; Online 24/7</p>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="flex items-center space-x-1">
+                <!-- Tombol Chat WA Helpdesk Langsung -->
+                <a href="https://wa.me/6281234567890?text=Halo%20IT%20Support%20PT%20S2P%20Karangkandri,%20saya%20butuh%20bantuan%20teknisi." 
+                   target="_blank" 
+                   class="p-2 rounded-xl text-emerald-400 hover:text-white hover:bg-emerald-900/40 transition" 
+                   title="Langsung Buka WhatsApp Helpdesk (0812-3456-7890)">
+                    <i class="fa-brands fa-whatsapp text-base"></i>
+                </a>
+
+                <!-- Tombol Email Helpdesk -->
+                <button type="button" 
+                        onclick="triggerQuickEmailModal()" 
+                        class="p-2 rounded-xl text-teal-400 hover:text-white hover:bg-teal-900/40 transition" 
+                        title="Kirim Laporan via Email (itsupport@s2p.co.id)">
+                    <i class="fa-solid fa-envelope text-xs"></i>
+                </button>
+
+                <!-- Tombol Tutup Window -->
+                <button type="button" 
+                        onclick="toggleAIChatbox()" 
+                        class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition" 
+                        title="Tutup Chat">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- NOTIFICATION BANNER INFO -->
+        <div class="bg-gradient-to-r from-emerald-50 to-teal-50 px-3.5 py-2 border-b border-emerald-100 flex items-center justify-between text-[11px] text-teal-900">
+            <div class="flex items-center space-x-1.5 truncate">
+                <i class="fa-solid fa-shield-halved text-emerald-600 text-xs flex-shrink-0"></i>
+                <span class="truncate">Didukung SOP IT Resmi PLTU Cilacap</span>
+            </div>
+            <a href="{{ route('knowledge.base') }}" class="text-[10px] font-bold text-teal-700 hover:text-teal-900 underline flex-shrink-0 ml-2">Panduan</a>
+        </div>
+
+        <!-- MESSAGES CONTAINER AREA -->
+        <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3.5 bg-[#f8fafc] text-xs">
+            
+            <!-- Bot Initial Welcome Bubble -->
+            <div class="flex items-start space-x-2.5 animate-fade-in">
+                <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                    <i class="fa-solid fa-headset text-[11px]"></i>
+                </div>
+                <div class="space-y-1.5 max-w-[85%]">
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 leading-relaxed">
+                        <p class="font-bold text-slate-900 mb-1">Halo {{ Auth::user()->name ?? 'Bapak/Ibu' }}! 👋</p>
+                        <p class="text-slate-600">
+                            Saya <strong>Asisten Virtual IT Support PT S2P</strong>. Silakan pilih topik kendala atau ketik keluhan Anda untuk diagnosa mandiri cepat sesuai SOP PLTU Karangkandri:
+                        </p>
+                    </div>
+
+                    <!-- Quick Topic Chips -->
+                    <div class="flex flex-wrap gap-1.5 pt-1" id="ai-quick-chips">
+                        <button type="button" onclick="sendQuickPrompt('Printer tidak bisa mencetak / offline')" 
+                                class="px-2.5 py-1 rounded-full bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-400 text-[10px] font-bold transition shadow-2xs cursor-pointer flex items-center space-x-1">
+                            <i class="fa-solid fa-print text-teal-600 text-[9px]"></i>
+                            <span>Printer Error</span>
+                        </button>
+
+                        <button type="button" onclick="sendQuickPrompt('Jaringan LAN atau Wi-Fi putus / limited connection')" 
+                                class="px-2.5 py-1 rounded-full bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-400 text-[10px] font-bold transition shadow-2xs cursor-pointer flex items-center space-x-1">
+                            <i class="fa-solid fa-network-wired text-sky-600 text-[9px]"></i>
+                            <span>Jaringan Putus</span>
+                        </button>
+
+                        <button type="button" onclick="sendQuickPrompt('Komputer PC lambat / hang / bluescreen')" 
+                                class="px-2.5 py-1 rounded-full bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-400 text-[10px] font-bold transition shadow-2xs cursor-pointer flex items-center space-x-1">
+                            <i class="fa-solid fa-desktop text-indigo-600 text-[9px]"></i>
+                            <span>PC Lambat / Freeze</span>
+                        </button>
+
+                        <button type="button" onclick="sendQuickPrompt('Lupa kata sandi / reset akun domain Windows PLTU')" 
+                                class="px-2.5 py-1 rounded-full bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-400 text-[10px] font-bold transition shadow-2xs cursor-pointer flex items-center space-x-1">
+                            <i class="fa-solid fa-key text-amber-600 text-[9px]"></i>
+                            <span>Reset Password</span>
+                        </button>
+
+                        <button type="button" onclick="sendQuickPrompt('Email Outlook / Zimbra tidak bisa kirim terima')" 
+                                class="px-2.5 py-1 rounded-full bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-400 text-[10px] font-bold transition shadow-2xs cursor-pointer flex items-center space-x-1">
+                            <i class="fa-solid fa-envelope text-rose-600 text-[9px]"></i>
+                            <span>Email Outlook</span>
+                        </button>
+
+                        <button type="button" onclick="sendQuickPrompt('Aplikasi SAP / Maximo PLTU tidak bisa login atau lambat')" 
+                                class="px-2.5 py-1 rounded-full bg-white hover:bg-teal-50 text-slate-700 hover:text-teal-900 border border-slate-200 hover:border-teal-400 text-[10px] font-bold transition shadow-2xs cursor-pointer flex items-center space-x-1">
+                            <i class="fa-solid fa-laptop-code text-emerald-600 text-[9px]"></i>
+                            <span>SAP / Maximo ERP</span>
+                        </button>
+                    </div>
+
+                    <span class="text-[9px] text-slate-400 block pl-1">Baru saja</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- TYPING INDICATOR (Hidden by default) -->
+        <div id="ai-typing-indicator" class="hidden px-4 py-2 bg-[#f8fafc] text-[11px] text-slate-400 flex items-center space-x-2">
+            <span class="inline-flex space-x-1">
+                <span class="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce"></span>
+                <span class="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span class="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+            </span>
+            <span class="font-medium text-slate-500">AI Support sedang menganalisis SOP...</span>
+        </div>
+
+        <!-- BOTTOM INPUT & DISPATCH ACTIONS -->
+        <div class="p-3 bg-white border-t border-slate-200 space-y-2">
+            <form onsubmit="handleAIChatSubmit(event)" class="flex items-center space-x-2">
+                <input type="text" 
+                       id="ai-chat-input" 
+                       placeholder="Ketik kendala Anda (mis: printer offline)..." 
+                       autocomplete="off"
+                       class="flex-1 text-xs rounded-2xl border border-slate-200 px-3.5 py-2.5 bg-slate-50 focus:bg-white focus:border-teal-600 focus:ring-1 focus:ring-teal-600 outline-none transition">
+                <button type="submit" 
+                        class="w-9 h-9 rounded-2xl bg-[#0f766e] hover:bg-[#115e59] text-white flex items-center justify-center transition shadow-xs flex-shrink-0 cursor-pointer"
+                        title="Kirim Pesan">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+            </form>
+
+            <div class="flex items-center justify-between text-[10px] text-slate-400 px-1 pt-0.5 border-t border-slate-100">
+                <div class="flex items-center space-x-1">
+                    <i class="fa-solid fa-phone text-teal-600 text-[9px]"></i>
+                    <span>Ext. 102 &bull; WA: 0812-3456-7890</span>
+                </div>
+                <button type="button" onclick="triggerQuickEmailModal()" class="text-teal-700 hover:text-teal-900 font-bold underline cursor-pointer">
+                    Lapor via Email &rarr;
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ============================================================== -->
+<!-- MODAL: FORMAT DISPATCH RESMI VIA EMAIL (itsupport@s2p.co.id)   -->
+<!-- ============================================================== -->
+<div id="modal-email-dispatch" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-fade-in space-y-4">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-9 h-9 rounded-xl bg-teal-50 border border-teal-200/80 text-teal-700 flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-sm text-slate-900">Format Pelaporan Resmi via Email</h3>
+                    <p class="text-[11px] text-slate-400">Unit IT Support & Infrastructure &bull; PT S2P</p>
+                </div>
+            </div>
+            <button onclick="closeModalEmailDispatch()" class="text-slate-400 hover:text-slate-600 p-1">
+                <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-slate-700 font-mono text-[11px]">
+                <div class="flex justify-between border-b border-slate-200/60 pb-1">
+                    <span class="font-bold text-slate-500">Kepada:</span>
+                    <span class="font-bold text-teal-800">itsupport@s2p.co.id</span>
+                </div>
+                <div class="flex justify-between border-b border-slate-200/60 pb-1">
+                    <span class="font-bold text-slate-500">Subjek:</span>
+                    <span class="font-semibold text-slate-900" id="email-preview-subject">[IT SERVICE] Laporan Gangguan - {{ Auth::user()->divisi ?? 'Operasional PLTU' }}</span>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-500 block mb-1">Isi Pesan:</span>
+                    <textarea id="email-preview-body" rows="6" readonly class="w-full bg-white border border-slate-200 rounded-xl p-2.5 font-mono text-[10.5px] leading-relaxed text-slate-800 focus:outline-none">Yth. Tim IT Support PT S2P PLTU Karangkandri,
+
+Mohon bantuan penanganan kendala teknis berikut:
+- Nama Pelapor: {{ Auth::user()->name }}
+- NIP / Akun: {{ Auth::user()->username ?? Auth::user()->nip ?? '-' }}
+- Divisi / Unit: {{ Auth::user()->divisi ?? 'Operasional PLTU' }}
+- Lokasi Ruangan: Gedung PLTU Karangkandri
+- Deskripsi Kendala: [Jelaskan kendala perangkat / jaringan di sini]
+- Waktu Terjadi: {{ now()->translatedFormat('d F Y, H:i') }} WIB
+
+Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</textarea>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-slate-500">
+                <i class="fa-solid fa-circle-info text-teal-600 mr-1"></i>
+                Klik tombol di bawah untuk langsung membuka aplikasi email default Anda (Outlook / Thunderbird / Webmail) dengan draft yang sudah otomatis terisi.
+            </p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <button type="button" onclick="copyEmailBody()" class="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center space-x-1.5 cursor-pointer">
+                <i class="fa-regular fa-copy text-xs"></i>
+                <span id="btn-copy-email-label">Salin Format Teks</span>
+            </button>
+
+            <div class="flex items-center space-x-2">
+                <button type="button" onclick="closeModalEmailDispatch()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-600 border border-slate-300 text-xs font-bold transition cursor-pointer">
+                    Tutup
+                </button>
+                <a id="btn-open-mailto" 
+                   href="mailto:itsupport@s2p.co.id?subject=%5BIT%20SERVICE%5D%20Laporan%20Gangguan%20-%20{{ urlencode(Auth::user()->divisi ?? 'Operasional') }}&body={{ urlencode("Yth. Tim IT Support PT S2P,\n\nMohon bantuan penanganan kendala:\n- Pelapor: " . (Auth::user()->name ?? 'Karyawan') . "\n- Divisi: " . (Auth::user()->divisi ?? 'PLTU') . "\n- Lokasi: Ruang Kerja\n- Kendala: ") }}" 
+                   class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-extrabold transition shadow-xs cursor-pointer">
+                    <i class="fa-solid fa-paper-plane text-xs"></i>
+                    <span>Buka di Email</span>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ============================================================== -->
+<!-- JAVASCRIPT KNOWLEDGE BASE AI & CHAT INTERACTION ENGINE         -->
+<!-- ============================================================== -->
+<script>
+    // Knowledge Base SOP Troubleshooting IT PT S2P PLTU Karangkandri
+    const aiKnowledgeBase = [
+        {
+            keywords: ['printer', 'cetak', 'print', 'kertas', 'spooler', 'tinta', 'toner', 'roller'],
+            title: 'SOP Troubleshooting Printer & Perangkat Cetak',
+            diagnosa: 'Kemungkinan antrian print spooler macet (stuck), kabel USB/LAN kendur, atau IP Printer offline.',
+            steps: [
+                'Pastikan lampu indikator printer berwarna hijau (Ready) dan kabel daya / kabel LAN terpasang erat.',
+                'Restart layanan Print Spooler: Buka Command Prompt & ketik: <code>net stop spooler && net start spooler</code>.',
+                'Periksa apakah ada kertas macet (paper jam) pada tray atau roller penarik.',
+                'Jika printer jaringan (LAN), pastikan ping ke IP printer berhasil (misal: ping 192.168.10.x).'
+            ],
+            waTemplate: 'Halo Teknisi IT Support, printer di ruangan saya tidak bisa mencetak / offline. Saya sudah cek kabel dan restart spooler tapi masih berkendala. Mohon bantuan teknisi lapangan.'
+        },
+        {
+            keywords: ['jaringan', 'lan', 'wifi', 'wi-fi', 'internet', 'kabel', 'rto', 'ip', 'disconnected', 'putus'],
+            title: 'SOP Penanganan Gangguan Jaringan LAN & Wi-Fi',
+            diagnosa: 'Koneksi ke switch access terputus, kabel LAN UTP longgar, atau konfigurasi DHCP IP release.',
+            steps: [
+                'Periksa kabel LAN di belakang CPU dan port wall-plate: pastikan lampu LED indikator menyala hijau/oranye kedip.',
+                'Coba lepas kabel LAN, tunggu 5 detik, lalu tancapkan kembali hingga berbunyi "klik".',
+                'Buka CMD lalu ketik: <code>ipconfig /release</code> dilanjutkan <code>ipconfig /renew</code>.',
+                'Coba tes ping ke gateway lokal: <code>ping 192.168.1.1 -t</code>. Jika RTO, kemungkinan port switch drop.'
+            ],
+            waTemplate: 'Halo Teknisi IT Support, koneksi jaringan LAN / Wi-Fi di ruangan saya terputus (unidentified network). Sudah coba lepas-pasang kabel dan ipconfig renew belum berhasil. Mohon bantuan pengecekan switch/jaringan.'
+        },
+        {
+            keywords: ['lemot', 'lambat', 'hang', 'freeze', 'bluescreen', 'bsod', 'restart', 'mati', 'cpu', 'ram'],
+            title: 'SOP Penanganan Komputer PC Lambat / Hang',
+            diagnosa: 'Beban memori RAM penuh, proses background aplikasi tinggi, atau bad sector hard disk/SSD.',
+            steps: [
+                'Tekan Ctrl + Shift + Esc untuk membuka Task Manager, periksa tab "Processes" dan cari aplikasi yang memakan CPU/RAM 100%.',
+                'Tutup tab browser yang berlebihan dan aplikasi yang tidak digunakan.',
+                'Lakukan Disk Cleanup (ketik "cleanmgr" di Start Menu) untuk membersihkan file temporary.',
+                'Lakukan restart bersih (Clean Restart) pada komputer untuk merefresh cache sistem operasi Windows.'
+            ],
+            waTemplate: 'Halo Teknisi IT Support, komputer kerja saya mengalami kendala lambat / sering hang dan bluescreen. Mohon jadwal pengecekan hardware atau pembersihan sistem.'
+        },
+        {
+            keywords: ['password', 'sandi', 'login', 'akun', 'domain', 'terkunci', 'locked', 'reset'],
+            title: 'SOP Permintaan Reset Password Akun Domain',
+            diagnosa: 'Akun Windows Active Directory terkunci (locked out) karena salah password melebihi 3x atau password expired.',
+            steps: [
+                'Pastikan tombol Caps Lock di keyboard tidak aktif sebelum mengetik sandi.',
+                'Tunggu 15 menit jika akun terkunci sementara oleh sistem keamanan Active Directory domain PLTU.',
+                'Untuk keamanan korporat PT S2P, reset password resmi harus diverifikasi oleh Koordinator IT.',
+                'Anda dapat langsung menghubungi Helpdesk via WhatsApp untuk verifikasi identitas dan reset cepat.'
+            ],
+            waTemplate: 'Halo Helpdesk IT PT S2P, akun domain / login komputer saya terkunci (locked out). Mohon bantuan reset password untuk NIP: {{ Auth::user()->username ?? Auth::user()->nip ?? "Karyawan" }}.'
+        },
+        {
+            keywords: ['email', 'outlook', 'zimbra', 'mail', 'inbox', 'kirim', 'terima', 'lampiran'],
+            title: 'SOP Penanganan Masalah Email Korporat',
+            diagnosa: 'Kapasitas mailbox (.PST/OST) melebihi kuota penyimpanan atau server autodiscover tersendat.',
+            steps: [
+                'Buka Outlook, cek status di pojok kanan bawah apakah bertuliskan "Connected" atau "Disconnected".',
+                'Hapus email sampah di folder "Deleted Items" dan "Junk Email" untuk mengosongkan kuota mailbox.',
+                'Tutup aplikasi Microsoft Outlook dan buka kembali melalui Safe Mode (ketik: <code>outlook.exe /safe</code>).',
+                'Coba akses email versi Webmail di browser untuk memastikan server email PLTU sedang normal.'
+            ],
+            waTemplate: 'Halo Tim IT Support, aplikasi Email Outlook saya tidak bisa mengirim/menerima pesan baru. Mohon bantuan pengecekan konfigurasi akun email atau kuota mailbox.'
+        },
+        {
+            keywords: ['sap', 'maximo', 'erp', 'aplikasi', 'portal', 'intranet', 'oracle'],
+            title: 'SOP Akses Aplikasi Operasional (SAP & Maximo PLTU)',
+            diagnosa: 'Session login SAP terkunci, VPN/Intranet PLTU belum tersambung, atau cache SAP GUI korup.',
+            steps: [
+                'Pastikan Anda berada di jaringan Intranet kantor PLTU (atau terhubung dengan VPN resmi perusahaan).',
+                'Pastikan SAP Logon menggunakan koneksi server produksi yang aktif.',
+                'Tutup seluruh jendela SAP GUI, buka Task Manager dan akhiri proses <code>saplogon.exe</code>, lalu coba buka kembali.',
+                'Jika muncul "User already logged on", pilih opsi "Terminate this session and log on again".'
+            ],
+            waTemplate: 'Halo IT Support, saya terkendala login ke aplikasi operasional (SAP / Maximo PLTU). Mohon bantuan pengecekan session akun saya.'
+        }
+    ];
+
+    function toggleAIChatbox() {
+        const win = document.getElementById('ai-chatbox-window');
+        if (!win) return;
+        const isHidden = win.classList.contains('pointer-events-none');
+        if (isHidden) {
+            win.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+            win.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            const inp = document.getElementById('ai-chat-input');
+            if (inp) setTimeout(() => inp.focus(), 200);
+        } else {
+            win.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+            win.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+        }
+    }
+
+    function sendQuickPrompt(promptText) {
+        const inp = document.getElementById('ai-chat-input');
+        if (inp) {
+            inp.value = promptText;
+            processUserChat(promptText);
+            inp.value = '';
+        }
+    }
+
+    function handleAIChatSubmit(e) {
+        e.preventDefault();
+        const inp = document.getElementById('ai-chat-input');
+        if (!inp) return;
+        const query = inp.value.trim();
+        if (!query) return;
+        inp.value = '';
+        processUserChat(query);
+    }
+
+    function processUserChat(userText) {
+        const container = document.getElementById('ai-chat-messages');
+        const indicator = document.getElementById('ai-typing-indicator');
+        if (!container) return;
+
+        // 1. Append User Message
+        const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const userBubble = document.createElement('div');
+        userBubble.className = 'flex items-start justify-end space-x-2 animate-fade-in';
+        userBubble.innerHTML = `
+            <div class="space-y-1 max-w-[85%] text-right">
+                <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-3 rounded-2xl rounded-tr-sm shadow-2xs leading-relaxed text-left">
+                    <p>${escapeHtml(userText)}</p>
+                </div>
+                <span class="text-[9px] text-slate-400 block pr-1">${timeNow}</span>
+            </div>
+        `;
+        container.appendChild(userBubble);
+        container.scrollTop = container.scrollHeight;
+
+        // Show typing
+        if (indicator) indicator.classList.remove('hidden');
+
+        // 2. Intelligent Match with SOP Knowledge Base
+        setTimeout(() => {
+            if (indicator) indicator.classList.add('hidden');
+
+            const lower = userText.toLowerCase();
+            let matched = null;
+            let highestScore = 0;
+
+            for (const item of aiKnowledgeBase) {
+                let score = 0;
+                for (const kw of item.keywords) {
+                    if (lower.includes(kw)) score++;
+                }
+                if (score > highestScore) {
+                    highestScore = score;
+                    matched = item;
+                }
+            }
+
+            const botBubble = document.createElement('div');
+            botBubble.className = 'flex items-start space-x-2.5 animate-fade-in';
+
+            if (matched && highestScore > 0) {
+                const encodedWA = encodeURIComponent(
+                    matched.waTemplate + "\n\n" +
+                    "- Pelapor: {{ Auth::user()->name ?? 'Karyawan' }}\n" +
+                    "- Divisi: {{ Auth::user()->divisi ?? 'Operasional PLTU' }}\n" +
+                    "- Detail: " + userText
+                );
+                const waUrl = "https://wa.me/6281234567890?text=" + encodedWA;
+                const ticketUrl = "{{ route('services.create') }}?kendala=" + encodeURIComponent(userText);
+
+                const stepsHtml = matched.steps.map((s, idx) => `
+                    <li class="flex items-start space-x-2">
+                        <span class="w-4 h-4 rounded-full bg-teal-100 text-teal-800 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">${idx + 1}</span>
+                        <span>${s}</span>
+                    </li>
+                `).join('');
+
+                botBubble.innerHTML = `
+                    <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-headset text-[11px]"></i>
+                    </div>
+                    <div class="space-y-2 max-w-[88%]">
+                        <div class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 space-y-2.5 leading-relaxed">
+                            <div class="flex items-center space-x-1.5 pb-2 border-b border-slate-100">
+                                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-teal-50 text-teal-700 border border-teal-200">SOP Terkait</span>
+                                <h4 class="font-extrabold text-slate-900 text-xs">${matched.title}</h4>
+                            </div>
+                            
+                            <p class="text-[11px] text-slate-600"><strong>Diagnosa Awal:</strong> ${matched.diagnosa}</p>
+
+                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
+                                <span class="font-bold text-[10px] text-slate-500 uppercase tracking-wider block mb-1.5">Langkah Panduan Mandiri:</span>
+                                <ul class="space-y-1.5 text-[11px] text-slate-700">
+                                    ${stepsHtml}
+                                </ul>
+                            </div>
+
+                            <p class="text-[11px] text-slate-500 italic">Sudah dicoba namun masih berkendala? Anda bisa langsung menghubungi teknisi siaga:</p>
+
+                            <!-- Dual Action Buttons -->
+                            <div class="pt-1 flex flex-col sm:flex-row gap-1.5">
+                                <a href="${waUrl}" target="_blank" 
+                                   class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
+                                    <i class="fa-brands fa-whatsapp text-xs"></i>
+                                    <span>Chat WA Teknisi</span>
+                                </a>
+                                <a href="${ticketUrl}" 
+                                   class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
+                                    <i class="fa-solid fa-ticket text-xs"></i>
+                                    <span>Buat Tiket</span>
+                                </a>
+                            </div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 block pl-1">${timeNow}</span>
+                    </div>
+                `;
+            } else {
+                // Fallback smart response
+                const encodedWA = encodeURIComponent(
+                    "Halo Helpdesk IT PT S2P, saya butuh penanganan kendala teknis:\n\n" +
+                    "- Pelapor: {{ Auth::user()->name ?? 'Karyawan' }}\n" +
+                    "- Divisi: {{ Auth::user()->divisi ?? 'Operasional PLTU' }}\n" +
+                    "- Kendala: " + userText
+                );
+                const waUrl = "https://wa.me/6281234567890?text=" + encodedWA;
+                const ticketUrl = "{{ route('services.create') }}?kendala=" + encodeURIComponent(userText);
+
+                botBubble.innerHTML = `
+                    <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                        <i class="fa-solid fa-headset text-[11px]"></i>
+                    </div>
+                    <div class="space-y-2 max-w-[88%]">
+                        <div class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 space-y-2 leading-relaxed">
+                            <p class="font-bold text-slate-900">Terima kasih atas laporan Anda!</p>
+                            <p class="text-[11px] text-slate-600">
+                                Untuk kendala <em>"${escapeHtml(userText)}"</em>, teknisi IT Support siap menangani langsung melalui WhatsApp Helpdesk atau pembuatan tiket servis resmi.
+                            </p>
+                            <div class="pt-1 flex flex-col sm:flex-row gap-1.5">
+                                <a href="${waUrl}" target="_blank" 
+                                   class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
+                                    <i class="fa-brands fa-whatsapp text-xs"></i>
+                                    <span>Hubungi WA Helpdesk</span>
+                                </a>
+                                <a href="${ticketUrl}" 
+                                   class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                    <span>Form Tiket</span>
+                                </a>
+                            </div>
+                        </div>
+                        <span class="text-[9px] text-slate-400 block pl-1">${timeNow}</span>
+                    </div>
+                `;
+            }
+
+            container.appendChild(botBubble);
+            container.scrollTop = container.scrollHeight;
+        }, 600);
+    }
+
+    function triggerQuickEmailModal() {
+        const modal = document.getElementById('modal-email-dispatch');
+        if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeModalEmailDispatch() {
+        const modal = document.getElementById('modal-email-dispatch');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function copyEmailBody() {
+        const ta = document.getElementById('email-preview-body');
+        const lbl = document.getElementById('btn-copy-email-label');
+        if (!ta) return;
+        navigator.clipboard.writeText(ta.value).then(() => {
+            if (lbl) {
+                const old = lbl.innerText;
+                lbl.innerText = 'Tersalin!';
+                setTimeout(() => lbl.innerText = old, 2000);
+            }
+        });
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+</script>

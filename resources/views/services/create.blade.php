@@ -392,18 +392,55 @@
         </div>
 
         <!-- RIGHT COLUMN: Coba Solusi Cepat Dulu (4 Cols) -->
-        <div class="lg:col-span-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
-            <div>
-                <h2 class="text-sm font-bold text-slate-900 tracking-tight">Coba solusi cepat dulu</h2>
-                <p class="text-[11px] text-slate-400 mt-0.5">
-                    Berdasarkan kategori <span id="quick-category-title" class="font-bold {{ $hasSelection ? 'text-teal-700' : 'text-slate-400' }}">{{ $hasSelection ? $activeCatItem['nama'] : '- Belum dipilih -' }}</span>
-                </p>
+        <div class="lg:col-span-4 space-y-4">
+            
+            <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900 tracking-tight">Coba solusi cepat dulu</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">
+                        Berdasarkan kategori <span id="quick-category-title" class="font-bold {{ $hasSelection ? 'text-teal-700' : 'text-slate-400' }}">{{ $hasSelection ? $activeCatItem['nama'] : '- Belum dipilih -' }}</span>
+                    </p>
+                </div>
+
+                <!-- Dynamic Troubleshooting Tips -->
+                <div id="quick-tips-container" class="space-y-2 text-xs font-medium text-slate-700">
+                    <!-- Javascript will populate based on category -->
+                </div>
             </div>
 
-            <!-- Dynamic Troubleshooting Tips -->
-            <div id="quick-tips-container" class="space-y-2 text-xs font-medium text-slate-700">
-                <!-- Javascript will populate based on category -->
+            <!-- Card Bantuan WhatsApp AI & Email Resmi -->
+            <div class="bg-gradient-to-br from-[#0e1a2b] to-[#152438] text-white p-5 rounded-3xl shadow-xs border border-slate-800 space-y-3.5">
+                <div class="flex items-center space-x-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-extrabold text-white">Butuh Penanganan Cepat?</h3>
+                        <p class="text-[10px] text-teal-300">Asisten AI & Helpdesk Siaga 24/7</p>
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-slate-300 leading-relaxed">
+                    Tanyakan diagnosa mandiri cepat ke AI atau teruskan tiket langsung ke WhatsApp Teknisi dan Email resmi IT Support.
+                </p>
+
+                <div class="pt-1 space-y-2">
+                    <button type="button" 
+                            onclick="toggleAIChatbox()" 
+                            class="w-full flex items-center justify-center space-x-2 px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-xs font-bold transition shadow-xs cursor-pointer">
+                        <i class="fa-solid fa-robot text-xs"></i>
+                        <span>Tanya Asisten AI Support</span>
+                    </button>
+
+                    <button type="button" 
+                            onclick="syncAndOpenEmailModal()" 
+                            class="w-full flex items-center justify-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold transition cursor-pointer">
+                        <i class="fa-solid fa-envelope text-xs text-teal-400"></i>
+                        <span>Lapor via Email (itsupport@s2p.co.id)</span>
+                    </button>
+                </div>
             </div>
+
         </div>
 
     </div>
@@ -762,6 +799,43 @@
             renderQuickTips('');
         }
     });
+
+    function syncAndOpenEmailModal() {
+        const judul = document.getElementById('judul_kendala')?.value?.trim() || 'Gangguan Operasional IT';
+        const lokasi = document.getElementById('lokasi_ruangan')?.value?.trim() || 'PLTU Karangkandri';
+        const kategori = document.getElementById('jenis_perangkat')?.value || 'Perangkat IT';
+        const keluhan = document.getElementById('keluhan')?.value?.trim() || '[Jelaskan detail kendala di sini]';
+
+        const subjectEl = document.getElementById('email-preview-subject');
+        const bodyEl = document.getElementById('email-preview-body');
+        const mailtoBtn = document.getElementById('btn-open-mailto');
+
+        const newSubject = `[IT SERVICE DESK] ${judul} - {{ Auth::user()->divisi ?? 'Operasional PLTU' }}`;
+        const newBody = `Yth. Tim IT Support PT S2P PLTU Karangkandri,
+
+Mohon bantuan perbaikan untuk kendala berikut:
+- Nama Pelapor: {{ Auth::user()->name }}
+- NIP: {{ Auth::user()->username ?? Auth::user()->nip ?? '-' }}
+- Divisi: {{ Auth::user()->divisi ?? 'Operasional PLTU' }}
+- Kategori Perangkat: ${kategori}
+- Lokasi Ruangan: ${lokasi}
+- Judul Kendala: ${judul}
+
+Deskripsi Detail Kendala:
+${keluhan}
+
+Waktu Pelaporan: {{ now()->translatedFormat('d F Y, H:i') }} WIB
+
+Demikian laporan ini kami sampaikan untuk dapat segera ditindaklanjuti. Terima kasih.`;
+
+        if (subjectEl) subjectEl.innerText = newSubject;
+        if (bodyEl) bodyEl.value = newBody;
+        if (mailtoBtn) {
+            mailtoBtn.href = `mailto:itsupport@s2p.co.id?subject=${encodeURIComponent(newSubject)}&body=${encodeURIComponent(newBody)}`;
+        }
+
+        triggerQuickEmailModal();
+    }
 </script>
 @endpush
 @endsection

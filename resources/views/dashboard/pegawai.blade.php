@@ -236,15 +236,35 @@
                     <span class="text-[10px] text-emerald-600 font-sans font-semibold">Aktif 24/7</span>
                 </div>
 
-                <div class="text-[11px] text-slate-500 space-y-1">
+                <div class="text-[11px] text-slate-500 space-y-1.5 pt-1">
                     <div class="flex items-center space-x-1.5">
                         <i class="fa-brands fa-whatsapp text-emerald-600 text-xs"></i>
-                        <span>WA Helpdesk: <strong>0812-3456-7890</strong></span>
+                        <span>WA Helpdesk: <a href="https://wa.me/6281234567890?text=Halo%20IT%20Support%20PT%20S2P,%20saya%20butuh%20bantuan%20teknisi." target="_blank" class="font-bold text-emerald-700 hover:underline">0812-3456-7890</a></span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <i class="fa-solid fa-envelope text-teal-600 text-xs"></i>
+                        <span>Email: <a href="javascript:void(0)" onclick="triggerQuickEmailModal()" class="font-bold text-teal-800 hover:underline">itsupport@s2p.co.id</a></span>
                     </div>
                     <div class="flex items-center space-x-1.5">
                         <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>
                         <span>Gedung Admin PLTU Karangkandri Lt. 1</span>
                     </div>
+                </div>
+
+                <!-- Tombol Aksi Cepat Bantuan -->
+                <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+                    <button type="button" 
+                            onclick="toggleAIChatbox()" 
+                            class="flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white text-[11px] font-bold transition shadow-2xs cursor-pointer">
+                        <i class="fa-solid fa-robot text-xs"></i>
+                        <span>Tanya AI</span>
+                    </button>
+                    <button type="button" 
+                            onclick="triggerQuickEmailModal()" 
+                            class="flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold transition cursor-pointer">
+                        <i class="fa-solid fa-envelope text-xs text-teal-600"></i>
+                        <span>Lapor Email</span>
+                    </button>
                 </div>
             </div>
 

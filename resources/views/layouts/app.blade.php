@@ -734,6 +734,17 @@
                     }
                 }
 
+                const aiChatBtn = document.getElementById('btn-open-ai-chat');
+                if (aiChatBtn) {
+                    if (isCollapsed) {
+                        aiChatBtn.classList.add('bottom-20');
+                        aiChatBtn.classList.remove('bottom-6');
+                    } else {
+                        aiChatBtn.classList.remove('bottom-20');
+                        aiChatBtn.classList.add('bottom-6');
+                    }
+                }
+
                 try {
                     localStorage.setItem('sidebar_collapsed_pref', isCollapsed ? '1' : '0');
                 } catch (e) {}
@@ -748,6 +759,7 @@
                     const wrapper = document.getElementById('main-content-wrapper');
                     const reopenBtn = document.getElementById('btn-sidebar-reopen');
                     const floatingLogout = document.getElementById('floating-collapsed-logout');
+                    const aiChatBtn = document.getElementById('btn-open-ai-chat');
 
                     if (pref === '1' && sidebar) {
                         sidebar.classList.add('sidebar-collapsed');
@@ -759,6 +771,10 @@
                         if (floatingLogout) {
                             floatingLogout.classList.remove('opacity-0', 'pointer-events-none', 'translate-x-4');
                             floatingLogout.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
+                        }
+                        if (aiChatBtn) {
+                            aiChatBtn.classList.add('bottom-20');
+                            aiChatBtn.classList.remove('bottom-6');
                         }
                     }
                 } catch (e) {}
@@ -827,6 +843,9 @@
             }
         });
     </script>
+
+    <!-- Floating WhatsApp AI Support Chatbox & Email Dispatch Modal (24/7) -->
+    @include('partials.ai-support-chatbox')
 
     @stack('scripts')
 </body>
