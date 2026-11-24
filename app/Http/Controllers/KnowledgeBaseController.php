@@ -67,12 +67,19 @@ class KnowledgeBaseController extends Controller
         }
         $categories = $categoriesQuery->orderBy('kategori')->pluck('kategori');
 
-        // Kategori count untuk badges
+        // Kategori count untuk badges (disesuaikan hak akses pengguna)
+        $baseScope = KnowledgeBase::query();
+        if ($user && $user->isPegawai()) {
+            $baseScope->whereIn('target_audience', ['all', 'pegawai'])->where('status', 'Terbit');
+        }
         $counts = [
-            'total' => KnowledgeBase::count(),
-            'jaringan' => KnowledgeBase::where('kategori', 'like', '%Jaringan%')->count(),
-            'hardware' => KnowledgeBase::where('kategori', 'like', '%Hardware%')->count(),
-            'sistem' => KnowledgeBase::where('kategori', 'like', '%Sistem%')->count(),
+            'total' => (clone $baseScope)->count(),
+            'jaringan' => (clone $baseScope)->where('kategori', 'like', '%Jaringan%')->count(),
+            'hardware' => (clone $baseScope)->where('kategori', 'like', '%Hardware%')->count(),
+            'sistem' => (clone $baseScope)->where('kategori', 'like', '%Sistem%')->count(),
+            'akun' => (clone $baseScope)->where('kategori', 'like', '%Akun%')->count(),
+            'aplikasi' => (clone $baseScope)->where('kategori', 'like', '%Aplikasi%')->count(),
+            'audiovisual' => (clone $baseScope)->where('kategori', 'like', '%Audio%')->count(),
         ];
 
         return view('pages.knowledge-base', compact('guides', 'counts', 'categories'));

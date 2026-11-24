@@ -118,6 +118,37 @@
                 $cardAnchorId = 'jaringan';
                 $assignedTopicAnchors['jaringan'] = true;
             }
+
+            $catLower = strtolower($guide->kategori);
+            $catIcon = 'fa-solid fa-book-bookmark';
+            $catColor = 'bg-teal-50 text-teal-700 border border-teal-200/60';
+            $iconBg = 'bg-teal-50 text-teal-700 border border-teal-100';
+
+            if (str_contains($catLower, 'jaringan') || str_contains($catLower, 'lan')) {
+                $catIcon = 'fa-solid fa-network-wired';
+                $catColor = 'bg-teal-50 text-teal-700 border border-teal-200/60';
+                $iconBg = 'bg-teal-50 text-teal-700 border border-teal-100';
+            } elseif (str_contains($catLower, 'hardware') || str_contains($catLower, 'pc')) {
+                $catIcon = 'fa-solid fa-microchip';
+                $catColor = 'bg-amber-50 text-amber-700 border border-amber-200/60';
+                $iconBg = 'bg-amber-50 text-amber-700 border border-amber-100';
+            } elseif (str_contains($catLower, 'printer')) {
+                $catIcon = 'fa-solid fa-print';
+                $catColor = 'bg-purple-50 text-purple-700 border border-purple-200/60';
+                $iconBg = 'bg-purple-50 text-purple-700 border border-purple-100';
+            } elseif (str_contains($catLower, 'akun') || str_contains($catLower, 'keamanan')) {
+                $catIcon = 'fa-solid fa-user-shield';
+                $catColor = 'bg-rose-50 text-rose-700 border border-rose-200/60';
+                $iconBg = 'bg-rose-50 text-rose-700 border border-rose-100';
+            } elseif (str_contains($catLower, 'aplikasi') || str_contains($catLower, 'email')) {
+                $catIcon = 'fa-solid fa-laptop-code';
+                $catColor = 'bg-blue-50 text-blue-700 border border-blue-200/60';
+                $iconBg = 'bg-blue-50 text-blue-700 border border-blue-100';
+            } elseif (str_contains($catLower, 'audio') || str_contains($catLower, 'rapat')) {
+                $catIcon = 'fa-solid fa-video';
+                $catColor = 'bg-indigo-50 text-indigo-700 border border-indigo-200/60';
+                $iconBg = 'bg-indigo-50 text-indigo-700 border border-indigo-100';
+            }
         @endphp
         <div @if($cardAnchorId) id="{{ $cardAnchorId }}" @endif
              class="sop-card scroll-mt-24 bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4 hover:border-teal-500/40 hover:shadow-md transition duration-150 flex flex-col justify-between"
@@ -131,15 +162,8 @@
                 <div class="flex items-start justify-between gap-3">
                     <div class="flex items-start space-x-3 min-w-0">
                         <!-- Category Icon -->
-                        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-xs 
-                            {{ str_contains($guide->kategori, 'Jaringan') ? 'bg-teal-50 text-teal-700 border border-teal-100' : (str_contains($guide->kategori, 'Hardware') ? 'bg-amber-50 text-amber-700 border border-amber-100' : 'bg-purple-50 text-purple-700 border border-purple-100') }}">
-                            @if(str_contains($guide->kategori, 'Jaringan'))
-                                <i class="fa-solid fa-network-wired"></i>
-                            @elseif(str_contains($guide->kategori, 'Hardware'))
-                                <i class="fa-solid fa-microchip"></i>
-                            @else
-                                <i class="fa-solid fa-print"></i>
-                            @endif
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-xs {{ $iconBg }}">
+                            <i class="{{ $catIcon }}"></i>
                         </div>
                         <div class="min-w-0">
                             <h2 class="font-extrabold text-slate-900 text-sm leading-snug">
@@ -156,8 +180,7 @@
 
                     <!-- Category & Audience Badges -->
                     <div class="flex flex-col items-end gap-1 flex-shrink-0">
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold 
-                            {{ str_contains($guide->kategori, 'Jaringan') ? 'bg-teal-50 text-teal-700 border border-teal-200/60' : (str_contains($guide->kategori, 'Hardware') ? 'bg-amber-50 text-amber-700 border border-amber-200/60' : 'bg-purple-50 text-purple-700 border border-purple-200/60') }}">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold {{ $catColor }}">
                             {{ $guide->kategori }}
                         </span>
 
