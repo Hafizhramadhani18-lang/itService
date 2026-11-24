@@ -72,7 +72,23 @@ class AiChatController extends Controller
     private function findBestMatchingSop(string $query, $sops)
     {
         $lowerQuery = mb_strtolower($query);
-        $words = array_filter(explode(' ', preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $lowerQuery)));
+        $rawWords = array_filter(explode(' ', preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $lowerQuery)));
+
+        // Daftar stopwords bahasa Indonesia umum agar tidak salah mencocokkan kata pendek secara parsial
+        $stopwords = [
+            'aku', 'kamu', 'saya', 'anda', 'dia', 'kita', 'kami', 'mereka',
+            'ini', 'itu', 'apa', 'kenapa', 'bagaimana', 'kapan', 'dimana', 'kok', 'ko', 'ya', 'kan',
+            'dan', 'atau', 'tapi', 'namun', 'dengan', 'ke', 'di', 'dari', 'pada', 'untuk', 'buat',
+            'bisa', 'tolong', 'mohon', 'mau', 'dong', 'sih', 'deh', 'lah', 'pun', 'ada'
+        ];
+
+        $words = array_filter($rawWords, function($w) use ($stopwords) {
+            return mb_strlen($w) >= 3 && !in_array($w, $stopwords);
+        });
+
+        if (empty($words)) {
+            return null;
+        }
 
         $bestSop = null;
         $highestScore = 0;
@@ -88,14 +104,14 @@ class AiChatController extends Controller
                 ($sop->perintah_cmd ?? '')
             );
 
-            // Cek kata kunci spesifik
+            // Cek kata kunci spesifik dengan boundary regex agar tidak mencocokkan substring sembarangan
             foreach ($words as $w) {
-                if (mb_strlen($w) < 3) continue;
-                if (str_contains($searchable, $w)) {
-                    $score += 3;
-                    // Bobot ekstra jika cocok di judul
-                    if (str_contains(mb_strtolower($sop->judul), $w)) {
-                        $score += 5;
+                $quotedW = preg_quote($w, '/');
+                if (preg_match('/\b' . $quotedW . '\b/u', $searchable)) {
+                    $score += 4;
+                    // Bobot ekstra jika cocok di judul secara utuh
+                    if (preg_match('/\b' . $quotedW . '\b/u', mb_strtolower($sop->judul))) {
+                        $score += 6;
                     }
                 }
             }
@@ -106,7 +122,7 @@ class AiChatController extends Controller
             }
         }
 
-        return $highestScore >= 3 ? $bestSop : null;
+        return $highestScore >= 4 ? $bestSop : null;
     }
 
     /**
@@ -182,6 +198,89 @@ Tugas Anda adalah:
     private function buildLocalSopResponse(string $userMessage, string $userName, string $userDivisi, $matchedSop): array
     {
         $lower = mb_strtolower($userMessage);
+
+        // 1. Diagnosa PC / Komputer / Laptop Mati Total, No Display, atau Mati Mendadak
+        if (preg_match('/\b(mati|gak nyala|ngga nyala|tidak menyala|padam|no display|layar hitam|black screen|beep|mati total|matot)\b/u', $lower) && 
+            (preg_match('/\b(pc|komputer|cpu|laptop|monitor|layar)\b/u', $lower) || str_contains($lower, 'komputer') || str_contains($lower, 'pc'))) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, kendala PC atau komputer tidak menyala/mati total umumnya disebabkan oleh pasokan daya atau modul memori (RAM). Berikut langkah diagnosa mandiri yang disarankan teknisi IT:",
+                'sop_title' => 'Diagnosa Mandiri PC Mati Total / No Display',
+                'sop_kategori' => 'Hardware & PC',
+                'steps' => [
+                    '**Periksa Saklar & Kabel Power**: Pastikan kabel daya AC terpasang kuat di bagian belakang casing CPU dan saklar Power Supply (PSU) berada pada posisi strip **I** (ON), bukan lingkaran **O** (OFF).',
+                    '**Uji Stop Kontak / Colokan**: Coba pindahkan colokan daya PC ke stop kontak lain atau bypass UPS/Stabilizer untuk memastikan bukan colokan yang mati.',
+                    '**Cek Lampu Indikator Motherboard**: Buka penutup casing samping, perhatikan apakah ada lampu LED kecil di motherboard yang menyala saat kabel dicolokkan.',
+                    '**Kipas Berputar Tapi Layar Mati (No Display)**: Cabut kabel listrik, lepas keping RAM, bersihkan pin tembaga kuning menggunakan penghapus pensil halus, lalu pasang kembali pada slot dengan bunyi *klik* yang rapat.',
+                    '**Gejala Mati Mendadak (Overheat)**: Jika PC menyala beberapa menit lalu mati sendiri, kipas pendingin processor (Heatsink Fan) kemungkinan kotor atau pasta pendingin telah kering.'
+                ],
+                'warning' => 'Jangan menyentuh komponen dalam komputer saat tangan basah atau kabel daya masih terhubung ke stop kontak PLN demi keselamatan kerja (K3 Listrik).',
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo Helpdesk IT PT S2P,\n\nSaya membutuhkan pengecekan teknisi untuk PC mati total/tidak menyala:\n- Pelapor: {$userName}\n- Divisi: {$userDivisi}\n- Keluhan: \"{$userMessage}\"\n\nMohon bantuannya."),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
+
+        // 2. Diagnosa Audio / Speaker / Suara Tidak Keluar
+        if (preg_match('/\b(suara|audio|speaker|headset|earphone|mic|mikrofon|bunyi|mute)\b/u', $lower) && 
+            preg_match('/\b(hilang|mati|gak keluar|tidak keluar|rusak|kresek|kecil)\b/u', $lower)) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, untuk kendala audio atau suara tidak keluar pada komputer kantor, berikut solusi cepat yang dapat dicoba:",
+                'sop_title' => 'Troubleshooting Audio & Speaker Komputer',
+                'sop_kategori' => 'Hardware & PC',
+                'steps' => [
+                    '**Periksa Ikon Speaker Taskbar**: Klik ikon speaker di pojok kanan bawah desktop, pastikan volume tidak dalam posisi **Mute (X)** atau terlalu rendah.',
+                    '**Pilih Output Perangkat yang Tepat**: Klik panah di samping slider volume dan pastikan perangkat output aktif adalah **Speakers (Realtek Audio)** atau headset yang sedang Anda gunakan.',
+                    '**Periksa Jack Audio 3.5mm**: Pastikan jack kabel audio tercolok pada port warna **Hijau (Audio Out)** di casing belakang/depan, bukan port merah muda (Mic).',
+                    '**Restart Audio Service**: Buka RUN (Win + R), ketik `services.msc`, cari **Windows Audio**, klik kanan lalu pilih **Restart**.'
+                ],
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, kendala suara/audio komputer dari {$userName}"),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
+
+        // 3. Diagnosa Mouse / Keyboard Tidak Merespon
+        if (preg_match('/\b(mouse|keyboard|kursor|pointer)\b/u', $lower) && 
+            preg_match('/\b(macet|rusak|mati|gak gerak|tidak gerak|tidak terdeteksi|delay|double click)\b/u', $lower)) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, kendala mouse atau keyboard tidak terdeteksi dapat diatasi dengan beberapa langkah mudah berikut:",
+                'sop_title' => 'Troubleshooting Mouse & Keyboard Kantor',
+                'sop_kategori' => 'Hardware & PC',
+                'steps' => [
+                    '**Pindahkan Port USB**: Cabut dongle/kabel USB mouse/keyboard dan colokkan ke port USB lain (disarankan port belakang motherboard yang langsung menempel di CPU).',
+                    '**Cek Baterai (Perangkat Wireless)**: Jika menggunakan mouse tanpa kabel, ganti baterai AA/AAA dengan yang baru dan pastikan saklar switch di bawah mouse pada posisi ON.',
+                    '**Tes di Device Manager**: Tekan **Win + X** lalu pilih **Device Manager**. Periksa apakah ada tanda seru kuning pada menu *Mice and other pointing devices*. Klik kanan lalu pilih **Scan for hardware changes**.'
+                ],
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, butuh penggantian mouse/keyboard untuk {$userName}"),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
+
+        // 4. Diagnosa Kecepatan Internet Lambat / Koneksi Putus-Putus
+        if (preg_match('/\b(internet|wifi|wi-fi|koneksi|jaringan|lemot|lambat|lelet|ping tinggi|rto)\b/u', $lower) && 
+            preg_match('/\b(lemot|lambat|lelet|putus|down|gangguan|rto|nge-lag|ngelag)\b/u', $lower)) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, jika koneksi internet terasa lambat atau putus-putus di ruangan kerja Anda, silakan ikuti diagnosa awal ini:",
+                'sop_title' => 'Optimasi & Diagnosa Jaringan Internet Kantor',
+                'sop_kategori' => 'Jaringan & LAN',
+                'steps' => [
+                    '**Uji Ping Gateway**: Tekan tombol **Win + R**, ketik `cmd`, lalu ketik `ping 8.8.8.8 -t` untuk melihat apakah ada paket data yang *Request Timed Out* (RTO).',
+                    '**Flush DNS & Reset IP**: Jalankan perintah refresh koneksi Windows untuk membersihkan cache DNS jaringan.',
+                    '**Periksa Aplikasi Download Latar Belakang**: Buka Task Manager (**Ctrl + Shift + Esc**), cek tab *Network* apakah ada aplikasi yang menyedot bandwidth besar (misal Windows Update atau OneDrive sync).',
+                    '**Cek Fisik Kabel LAN**: Pastikan klip pengunci kabel LAN di belakang PC tidak patah dan lampu indikator hijau/oranye di port berkedip stabil.'
+                ],
+                'cmd_title' => 'Perintah Reset DNS Windows',
+                'cmd' => 'ipconfig /flushdns && ipconfig /renew',
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support Jaringan, lapor koneksi internet lambat dari divisi {$userDivisi}"),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
 
         // Smart general IT patterns (Excel, shortcuts, browser cache, display/proyektor, mouse/keyboard)
         if (str_contains($lower, 'excel') || str_contains($lower, 'vlookup') || str_contains($lower, 'rumus') || str_contains($lower, 'if(') || str_contains($lower, 'sumif')) {
