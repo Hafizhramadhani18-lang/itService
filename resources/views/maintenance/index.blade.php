@@ -39,6 +39,17 @@
                 <span>Cetak / PDF</span>
             </a>
 
+            <!-- Tombol Sinkronkan Jadwal Otomatis (Rutin Harian, Mingguan, Bulanan, Tahunan) -->
+            <form method="POST" action="{{ route('maintenance.syncSchedules') }}" class="inline">
+                @csrf
+                <button type="submit" 
+                        class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-teal-50 text-teal-800 border border-teal-600/60 text-xs font-bold transition shadow-2xs cursor-pointer"
+                        title="Otomatis sinkronkan jadwal rutin menjadi log terjadwal di daftar kerja teknisi">
+                    <i class="fa-solid fa-arrows-rotate text-teal-600 text-xs"></i>
+                    <span class="hidden sm:inline">Sinkronkan Jadwal</span>
+                </button>
+            </form>
+
             @if(Auth::user()->isTeknisi())
                 <!-- Tombol + Catat Pemeliharaan Khusus Teknisi -->
                 <a href="{{ route('maintenance.create') }}" 
@@ -189,9 +200,10 @@
                             {{ $sched->log_number }}
                         </span>
                         <a href="{{ route('maintenance.create', ['from_schedule' => $sched->id, 'kode_perangkat' => $sched->kode_perangkat]) }}" 
-                           class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-bold transition shadow-2xs group-hover:shadow-xs">
-                            <span>Mulai PM</span>
-                            <i class="fa-solid fa-arrow-right text-[10px] ml-0.5"></i>
+                           class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-bold transition shadow-2xs group-hover:shadow-xs"
+                           title="Kerjakan dan isi checklist pemeliharaan">
+                            <i class="fa-solid fa-clipboard-check text-[11px]"></i>
+                            <span>Kerjakan / Isi Checklist</span>
                         </a>
                     </div>
                 </div>
@@ -509,14 +521,16 @@
                                     @if($authUser->isTeknisi())
                                         @if($isOwnedByMe || $isUnassignedSchedule)
                                             <a href="{{ route('maintenance.create', ['from_schedule' => $log->id]) }}" 
-                                               class="inline-flex items-center justify-center px-4 py-1.5 rounded-xl bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-bold transition shadow-2xs">
-                                                Catat
+                                               class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-bold transition shadow-2xs"
+                                               title="Kerjakan dan isi checklist pemeliharaan">
+                                                <i class="fa-solid fa-clipboard-check text-[11px]"></i>
+                                                <span>Kerjakan / Isi Checklist</span>
                                             </a>
                                         @else
                                             <span title="Jadwal ini ditugaskan ke {{ $log->teknisi_nama }}"
                                                   class="inline-flex items-center justify-center space-x-1 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 text-xs font-semibold cursor-not-allowed select-none">
                                                 <i class="fa-solid fa-lock text-[10px]"></i>
-                                                <span>Catat</span>
+                                                <span>Kerjakan</span>
                                             </span>
                                         @endif
                                     @else

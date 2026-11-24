@@ -24,6 +24,9 @@ class MaintenanceController extends Controller
      */
     public function index(Request $request)
     {
+        // Otomatis sinkronkan master jadwal rutin menjadi log berstatus Terjadwal/Terlambat
+        self::syncSchedulesToLogs();
+
         $monthNames = [
             1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
             5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
@@ -2072,5 +2075,108 @@ class MaintenanceController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Otomatisasi sinkronisasi Master Jadwal Rutin ke Log Pemeliharaan.
+     * Membuat tugas Terjadwal untuk teknisi sehingga teknisi tidak perlu input manual dari nol.
+     */
+    public static function syncSchedulesToLogs(): int
+    {
+        $activeSchedules = MaintenanceSchedule::where('is_active', true)->get();
+        $createdCount = 0;
+        $today = now()->startOfDay();
+
+        foreach ($activeSchedules as $schedule) {
+            $due = $schedule->tanggal_berikutnya
+                ? Carbon::parse($schedule->tanggal_berikutnya)->startOfDay()
+                : $today;
+
+            // Cek apakah ada tugas yang masih aktif (Terjadwal / Terlambat) untuk jadwal ini
+            $activeLog = MaintenanceLog::where(function ($q) use ($schedule) {
+                    $q->where('jadwal_id', $schedule->id)
+                      ->orWhere(function ($match) use ($schedule) {
+                          $match->where('nama_perangkat', $schedule->nama_aset)
+                                ->where('lokasi_ruangan', $schedule->lokasi_ruangan);
+                      });
+                })
+                ->whereIn('status', ['Terjadwal', 'Terlambat'])
+                ->first();
+
+            if ($activeLog) {
+                // Update status ke Terlambat jika sudah melewati hari H
+                if ($activeLog->status === 'Terjadwal' && $activeLog->tanggal_cek && Carbon::parse($activeLog->tanggal_cek)->lt($today)) {
+                    $activeLog->update(['status' => 'Terlambat']);
+                }
+                continue;
+            }
+
+            // Jika jadwal sudah jatuh tempo atau akan tiba dalam 7 hari ke depan
+            if ($due->lte(now()->addDays(7)->endOfDay())) {
+                // Pastikan belum ada log selesai pada tanggal yang sama (mencegah duplikasi siklus yang sama)
+                $alreadyFinished = MaintenanceLog::where(function ($q) use ($schedule) {
+                        $q->where('jadwal_id', $schedule->id)
+                          ->orWhere('nama_perangkat', $schedule->nama_aset);
+                    })
+                    ->whereDate('tanggal_cek', $due->toDateString())
+                    ->where('status', 'Selesai')
+                    ->exists();
+
+                if (!$alreadyFinished) {
+                    $isPast = $due->lt($today);
+                    $status = $isPast ? 'Terlambat' : 'Terjadwal';
+                    $tech = $schedule->teknisi_id ? User::find($schedule->teknisi_id) : null;
+                    $techNama = $tech ? $tech->name : ($schedule->teknisi_nama ?: 'Belum ada');
+
+                    // Cari kode perangkat dari master asset jika belum ada
+                    $kodePerangkat = $schedule->kode_perangkat;
+                    if (empty($kodePerangkat)) {
+                        $matchedAsset = Asset::where('nama_aset', $schedule->nama_aset)->first();
+                        $kodePerangkat = $matchedAsset ? $matchedAsset->kode_aset : ('AST-' . strtoupper(Str::random(5)));
+                    }
+
+                    MaintenanceLog::create([
+                        'log_number' => MaintenanceLog::generateLogNumber($due),
+                        'tanggal_cek' => $due->toDateString(),
+                        'jam_mulai' => $schedule->jam_mulai ?: '08:00',
+                        'periode_bulan' => $due->format('Y-m'),
+                        'nama_perangkat' => $schedule->nama_aset,
+                        'lokasi_ruangan' => $schedule->lokasi_ruangan,
+                        'kode_perangkat' => $kodePerangkat,
+                        'jenis_perangkat' => 'Server / UPS',
+                        'divisi' => 'Operasional PLTU',
+                        'user_id' => $tech?->id,
+                        'teknisi_nama' => $techNama,
+                        'tim' => $schedule->tim ?: 'Tim IT Lapangan',
+                        'kegiatan' => $schedule->kegiatan ?: 'Pemeriksaan Rutin Berkala',
+                        'jenis_pemeliharaan' => 'Rutin',
+                        'checklist' => $schedule->checklist,
+                        'status' => $status,
+                        'kondisi' => 'Prima',
+                        'tindakan' => "Dijadwalkan otomatis ({$schedule->frekuensi}) dari Master Jadwal Rutin",
+                        'catatan_rekomendasi' => $schedule->catatan_teknisi,
+                        'status_tindak_lanjut' => 'Selesai',
+                        'jadwal_id' => $schedule->id,
+                    ]);
+
+                    $createdCount++;
+                }
+            }
+        }
+
+        return $createdCount;
+    }
+
+    /**
+     * Manual Trigger Sinkronisasi Jadwal Pemeliharaan via Tombol.
+     */
+    public function syncSchedules(Request $request)
+    {
+        $created = self::syncSchedulesToLogs();
+        $msg = $created > 0
+            ? "{$created} tugas pemeliharaan rutin berhasil disinkronkan otomatis ke daftar kerja teknisi!"
+            : "Semua jadwal pemeliharaan rutin aktif sudah tersinkronisasi di daftar kerja teknisi.";
+
+        return redirect()->back()->with('success', $msg);
     }
 }

@@ -71,15 +71,16 @@
             will-change: transform;
         }
         #main-content-wrapper {
-            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: margin-left;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: margin-left, padding-left;
         }
         @media (min-width: 768px) {
             #sidebar.sidebar-collapsed {
                 transform: translateX(-100%) !important;
             }
             #main-content-wrapper.sidebar-collapsed {
-                margin-left: 4.75rem !important; /* 76px: ruang pas di tepi kiri agar tombol Menu dan Keluar tidak pernah menabrak form atau teks */
+                margin-left: 0 !important;
+                padding-left: 5.5rem !important; /* Ruang lega 88px di sisi kiri agar tombol Menu tidak menabrak form atau judul */
             }
         }
     </style>
@@ -628,19 +629,19 @@
             <button type="button" 
                     id="btn-sidebar-reopen" 
                     onclick="toggleSidebar()" 
-                    class="fixed top-5 left-3 sm:left-3.5 z-40 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white border border-slate-700/80 shadow-xl transition-all duration-300 cursor-pointer items-center space-x-1.5 group focus:outline-none opacity-0 pointer-events-none -translate-x-4 inline-flex"
+                    class="fixed top-6 left-5 z-40 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white border border-slate-700/80 shadow-xl transition-all duration-300 cursor-pointer items-center space-x-1.5 group focus:outline-none opacity-0 pointer-events-none -translate-x-4 inline-flex"
                     title="Buka Menu Sidebar (Garis 3 / Ctrl+B)">
                 <i class="fa-solid fa-bars text-sm text-teal-400 group-hover:text-teal-300 transition"></i>
                 <span class="text-xs font-bold text-slate-200 group-hover:text-white transition">Menu</span>
             </button>
 
-            <!-- Floating Tombol Logout saat Sidebar Tersembunyi (Pojok Bawah Kiri) -->
+            <!-- Floating Tombol Logout saat Sidebar Tersembunyi (Pojok Bawah Kanan Sesuai Mockup Bersih) -->
             <div id="floating-collapsed-logout" 
-                 class="fixed bottom-5 left-3 sm:left-3.5 z-40 transition-all duration-300 opacity-0 pointer-events-none -translate-x-4">
+                 class="fixed bottom-6 right-6 z-40 transition-all duration-300 opacity-0 pointer-events-none translate-x-4">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" 
-                            class="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-rose-950/90 text-white hover:text-rose-200 border border-slate-700/80 hover:border-rose-600/60 shadow-xl text-xs font-bold transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                            class="flex items-center space-x-1.5 px-3.5 py-2.5 rounded-xl bg-[#0e1a2b] hover:bg-rose-950/90 text-white hover:text-rose-200 border border-slate-700/80 hover:border-rose-600/60 shadow-xl text-xs font-bold transition-all duration-200 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                             title="Keluar dari Akun (Logout)">
                         <i class="fa-solid fa-arrow-right-from-bracket text-rose-400 group-hover:translate-x-0.5 transition-transform text-xs"></i>
                         <span>Keluar</span>
@@ -658,14 +659,14 @@
                         rBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                     }
                     if (fLog) {
-                        fLog.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        fLog.classList.remove('opacity-0', 'pointer-events-none', 'translate-x-4');
                         fLog.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                     }
                 }
             </script>
 
             <!-- Page Body Content -->
-            <main class="flex-1 p-6 sm:p-8 max-w-7xl w-full mx-auto">
+            <main class="flex-1 p-6 sm:p-8 max-w-7xl w-full">
                 @yield('content')
             </main>
 
@@ -725,11 +726,11 @@
 
                 if (floatingLogout) {
                     if (isCollapsed) {
-                        floatingLogout.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        floatingLogout.classList.remove('opacity-0', 'pointer-events-none', 'translate-x-4');
                         floatingLogout.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                     } else {
                         floatingLogout.classList.remove('opacity-100', 'pointer-events-auto', 'translate-x-0');
-                        floatingLogout.classList.add('opacity-0', 'pointer-events-none', '-translate-x-4');
+                        floatingLogout.classList.add('opacity-0', 'pointer-events-none', 'translate-x-4');
                     }
                 }
 
@@ -756,7 +757,7 @@
                             reopenBtn.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                         }
                         if (floatingLogout) {
-                            floatingLogout.classList.remove('opacity-0', 'pointer-events-none', '-translate-x-4');
+                            floatingLogout.classList.remove('opacity-0', 'pointer-events-none', 'translate-x-4');
                             floatingLogout.classList.add('opacity-100', 'pointer-events-auto', 'translate-x-0');
                         }
                     }

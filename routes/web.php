@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/pemeliharaan/schedules/{maintenanceSchedule}', [MaintenanceController::class, 'updateRecurringSchedule'])->name('maintenance.schedules.update');
     Route::post('/pemeliharaan/schedules/{maintenanceSchedule}/deactivate', [MaintenanceController::class, 'deactivateRecurringSchedule'])->name('maintenance.schedules.deactivate');
     Route::delete('/pemeliharaan/schedules/{maintenanceSchedule}', [MaintenanceController::class, 'destroyRecurringSchedule'])->name('maintenance.schedules.destroy');
+    Route::post('/pemeliharaan/sinkron-jadwal', [MaintenanceController::class, 'syncSchedules'])->name('maintenance.syncSchedules');
     Route::get('/pemeliharaan/{maintenanceLog}/cetak', [MaintenanceController::class, 'cetakSingle'])->name('maintenance.cetakSingle');
     Route::resource('pemeliharaan', MaintenanceController::class)->names('maintenance')->parameters(['pemeliharaan' => 'maintenanceLog']);
 
