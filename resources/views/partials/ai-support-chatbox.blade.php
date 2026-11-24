@@ -400,129 +400,180 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
         container.appendChild(userBubble);
         container.scrollTop = container.scrollHeight;
 
-        // Show typing
+        // Show typing indicator
         if (indicator) indicator.classList.remove('hidden');
 
-        // 2. Intelligent Match with SOP Knowledge Base
-        setTimeout(() => {
+        // 2. Kirim ke Endpoint AI Backend (Google Gemini AI + Database SOP RAG)
+        fetch('{{ route("ai.chat") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ message: userText })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Network error');
+            return res.json();
+        })
+        .then(data => {
             if (indicator) indicator.classList.add('hidden');
+            renderBotResponse(data, userText, timeNow);
+        })
+        .catch(err => {
+            console.warn('AI API fallback to local:', err);
+            if (indicator) indicator.classList.add('hidden');
+            renderLocalFallbackResponse(userText, timeNow);
+        });
+    }
 
-            const lower = userText.toLowerCase();
-            let matched = null;
-            let highestScore = 0;
+    function renderBotResponse(data, userText, timeNow) {
+        const container = document.getElementById('ai-chat-messages');
+        if (!container) return;
 
-            for (const item of aiKnowledgeBase) {
-                let score = 0;
-                for (const kw of item.keywords) {
-                    if (lower.includes(kw)) score++;
-                }
-                if (score > highestScore) {
-                    highestScore = score;
-                    matched = item;
-                }
-            }
+        const botBubble = document.createElement('div');
+        botBubble.className = 'flex items-start space-x-2.5 animate-fade-in';
 
-            const botBubble = document.createElement('div');
-            botBubble.className = 'flex items-start space-x-2.5 animate-fade-in';
+        // Badges
+        let badgeHtml = '';
+        if (data.source === 'gemini_ai') {
+            badgeHtml += `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center space-x-1"><i class="fa-solid fa-wand-magic-sparkles text-[8px] text-amber-500"></i><span>Gemini AI</span></span>`;
+        }
+        if (data.sop_title) {
+            badgeHtml += `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-teal-50 text-teal-700 border border-teal-200 truncate max-w-[200px]" title="${escapeHtml(data.sop_title)}">SOP: ${escapeHtml(data.sop_title)}</span>`;
+        }
 
-            if (matched && highestScore > 0) {
-                const encodedWA = encodeURIComponent(
-                    matched.waTemplate + "\n\n" +
-                    "- Pelapor: {{ Auth::user()->name ?? 'Karyawan' }}\n" +
-                    "- Divisi: {{ Auth::user()->divisi ?? 'Operasional PLTU' }}\n" +
-                    "- Detail: " + userText
-                );
-                const waUrl = "https://wa.me/6281234567890?text=" + encodedWA;
-                const ticketUrl = "{{ route('services.create') }}?kendala=" + encodeURIComponent(userText);
+        // Parse formatted reply (markdown bold & line breaks)
+        let formattedReply = escapeHtml(data.reply || '')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
 
-                const stepsHtml = matched.steps.map((s, idx) => `
-                    <li class="flex items-start space-x-2">
-                        <span class="w-4 h-4 rounded-full bg-teal-100 text-teal-800 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">${idx + 1}</span>
-                        <span>${s}</span>
-                    </li>
-                `).join('');
+        // Steps list
+        let stepsHtml = '';
+        if (data.steps && Array.isArray(data.steps) && data.steps.length > 0) {
+            const stepItems = data.steps.map((s, idx) => `
+                <li class="flex items-start space-x-2">
+                    <span class="w-4 h-4 rounded-full bg-teal-100 text-teal-800 text-[10px] font-black flex items-center justify-center flex-shrink-0 mt-0.5">${idx + 1}</span>
+                    <span class="text-slate-700">${escapeHtml(s)}</span>
+                </li>
+            `).join('');
 
-                botBubble.innerHTML = `
-                    <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                        <i class="fa-solid fa-headset text-[11px]"></i>
+            stepsHtml = `
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80 my-2">
+                    <span class="font-bold text-[10px] text-slate-500 uppercase tracking-wider block mb-1.5">Langkah Panduan Mandiri:</span>
+                    <ul class="space-y-1.5 text-[11px]">
+                        ${stepItems}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Command Box
+        let cmdHtml = '';
+        if (data.cmd) {
+            cmdHtml = `
+                <div class="bg-slate-900 text-slate-100 p-2.5 rounded-xl font-mono text-[10px] space-y-1.5 my-2">
+                    <div class="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-1">
+                        <span class="text-[9px]">${escapeHtml(data.cmd_title || 'Perintah Terminal / CMD')}</span>
+                        <button type="button" onclick="copySnippetText(this)" data-code="${escapeHtml(data.cmd)}" class="text-teal-400 hover:text-white transition cursor-pointer">
+                            <i class="fa-regular fa-copy text-[10px]"></i> Salin
+                        </button>
                     </div>
-                    <div class="space-y-2 max-w-[88%]">
-                        <div class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 space-y-2.5 leading-relaxed">
-                            <div class="flex items-center space-x-1.5 pb-2 border-b border-slate-100">
-                                <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-teal-50 text-teal-700 border border-teal-200">SOP Terkait</span>
-                                <h4 class="font-extrabold text-slate-900 text-xs">${matched.title}</h4>
-                            </div>
-                            
-                            <p class="text-[11px] text-slate-600"><strong>Diagnosa Awal:</strong> ${matched.diagnosa}</p>
+                    <pre class="overflow-x-auto whitespace-pre leading-relaxed text-teal-300">${escapeHtml(data.cmd)}</pre>
+                </div>
+            `;
+        }
 
-                            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200/80">
-                                <span class="font-bold text-[10px] text-slate-500 uppercase tracking-wider block mb-1.5">Langkah Panduan Mandiri:</span>
-                                <ul class="space-y-1.5 text-[11px] text-slate-700">
-                                    ${stepsHtml}
-                                </ul>
-                            </div>
+        // Warning Box
+        let warningHtml = '';
+        if (data.warning) {
+            warningHtml = `
+                <div class="p-2 rounded-xl bg-amber-50 border border-amber-200/80 text-[10.5px] text-amber-800 flex items-start space-x-1.5 my-1.5">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-xs flex-shrink-0 mt-0.5"></i>
+                    <span><strong>Perhatian:</strong> ${escapeHtml(data.warning)}</span>
+                </div>
+            `;
+        }
 
-                            <p class="text-[11px] text-slate-500 italic">Sudah dicoba namun masih berkendala? Anda bisa langsung menghubungi teknisi siaga:</p>
+        const waUrl = data.wa_url || 'https://wa.me/6281234567890';
+        const ticketUrl = data.ticket_url || '{{ route("services.create") }}';
 
-                            <!-- Dual Action Buttons -->
-                            <div class="pt-1 flex flex-col sm:flex-row gap-1.5">
-                                <a href="${waUrl}" target="_blank" 
-                                   class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
-                                    <i class="fa-brands fa-whatsapp text-xs"></i>
-                                    <span>Chat WA Teknisi</span>
-                                </a>
-                                <a href="${ticketUrl}" 
-                                   class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
-                                    <i class="fa-solid fa-ticket text-xs"></i>
-                                    <span>Buat Tiket</span>
-                                </a>
-                            </div>
+        botBubble.innerHTML = `
+            <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-2xs">
+                <i class="fa-solid fa-robot text-[11px]"></i>
+            </div>
+            <div class="space-y-2 max-w-[88%]">
+                <div class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 space-y-2 leading-relaxed">
+                    ${badgeHtml ? `<div class="flex flex-wrap items-center gap-1.5 pb-2 border-b border-slate-100">${badgeHtml}</div>` : ''}
+                    
+                    <div class="text-[11px] text-slate-700 leading-relaxed">${formattedReply}</div>
+
+                    ${stepsHtml}
+                    ${cmdHtml}
+                    ${warningHtml}
+
+                    <div class="pt-2 border-t border-slate-100">
+                        <p class="text-[10px] text-slate-400 italic mb-2">Masih terkendala atau butuh teknisi lapangan?</p>
+                        <div class="flex flex-col sm:flex-row gap-1.5">
+                            <a href="${waUrl}" target="_blank" 
+                               class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
+                                <i class="fa-brands fa-whatsapp text-xs"></i>
+                                <span>Chat WA Teknisi</span>
+                            </a>
+                            <a href="${ticketUrl}" 
+                               class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
+                                <i class="fa-solid fa-ticket text-xs"></i>
+                                <span>Buat Tiket</span>
+                            </a>
                         </div>
-                        <span class="text-[9px] text-slate-400 block pl-1">${timeNow}</span>
                     </div>
-                `;
-            } else {
-                // Fallback smart response
-                const encodedWA = encodeURIComponent(
-                    "Halo Helpdesk IT PT S2P, saya butuh penanganan kendala teknis:\n\n" +
-                    "- Pelapor: {{ Auth::user()->name ?? 'Karyawan' }}\n" +
-                    "- Divisi: {{ Auth::user()->divisi ?? 'Operasional PLTU' }}\n" +
-                    "- Kendala: " + userText
-                );
-                const waUrl = "https://wa.me/6281234567890?text=" + encodedWA;
-                const ticketUrl = "{{ route('services.create') }}?kendala=" + encodeURIComponent(userText);
+                </div>
+                <span class="text-[9px] text-slate-400 block pl-1">${timeNow}</span>
+            </div>
+        `;
 
-                botBubble.innerHTML = `
-                    <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
-                        <i class="fa-solid fa-headset text-[11px]"></i>
-                    </div>
-                    <div class="space-y-2 max-w-[88%]">
-                        <div class="bg-white p-3.5 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 space-y-2 leading-relaxed">
-                            <p class="font-bold text-slate-900">Terima kasih atas laporan Anda!</p>
-                            <p class="text-[11px] text-slate-600">
-                                Untuk kendala <em>"${escapeHtml(userText)}"</em>, teknisi IT Support siap menangani langsung melalui WhatsApp Helpdesk atau pembuatan tiket servis resmi.
-                            </p>
-                            <div class="pt-1 flex flex-col sm:flex-row gap-1.5">
-                                <a href="${waUrl}" target="_blank" 
-                                   class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
-                                    <i class="fa-brands fa-whatsapp text-xs"></i>
-                                    <span>Hubungi WA Helpdesk</span>
-                                </a>
-                                <a href="${ticketUrl}" 
-                                   class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
-                                    <i class="fa-solid fa-plus text-xs"></i>
-                                    <span>Form Tiket</span>
-                                </a>
-                            </div>
-                        </div>
-                        <span class="text-[9px] text-slate-400 block pl-1">${timeNow}</span>
-                    </div>
-                `;
+        container.appendChild(botBubble);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function renderLocalFallbackResponse(userText, timeNow) {
+        const lower = userText.toLowerCase();
+        let matched = null;
+        let highestScore = 0;
+
+        for (const item of aiKnowledgeBase) {
+            let score = 0;
+            for (const kw of item.keywords) {
+                if (lower.includes(kw)) score++;
             }
+            if (score > highestScore) {
+                highestScore = score;
+                matched = item;
+            }
+        }
 
-            container.appendChild(botBubble);
-            container.scrollTop = container.scrollHeight;
-        }, 600);
+        const fallbackData = {
+            source: 'local_sop_database',
+            reply: matched ? `Berdasarkan SOP **${matched.title}**, berikut diagnosa dan langkah penanganan mandiri:` : `Terima kasih atas laporan Anda. Untuk kendala *"${userText}"*, tim teknisi IT Support siap membantu Anda langsung.`,
+            sop_title: matched ? matched.title : null,
+            steps: matched ? matched.steps : ['Periksa sambungan kabel dan daya perangkat.', 'Hubungi Helpdesk IT Support via Telepon Ext. 102 atau WhatsApp siaga.'],
+            wa_url: "https://wa.me/6281234567890?text=" + encodeURIComponent("Halo IT Support PT S2P, saya butuh penanganan kendala: " + userText),
+            ticket_url: "{{ route('services.create') }}?kendala=" + encodeURIComponent(userText)
+        };
+
+        renderBotResponse(fallbackData, userText, timeNow);
+    }
+
+    function copySnippetText(btn) {
+        const code = btn.getAttribute('data-code');
+        if (!code) return;
+        navigator.clipboard.writeText(code).then(() => {
+            const old = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check text-[10px] text-emerald-400"></i> Tersalin!';
+            setTimeout(() => btn.innerHTML = old, 2000);
+        });
     }
 
     function triggerQuickEmailModal() {

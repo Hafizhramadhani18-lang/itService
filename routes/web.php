@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AiChatController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KnowledgeBaseController;
@@ -117,4 +118,7 @@ Route::middleware('auth')->group(function () {
 
     // CRUD Tiket Servis
     Route::resource('services', ServiceController::class);
+
+    // Endpoint Interaksi AI Chatbox Virtual Assistant (RAG SOP & Gemini)
+    Route::post('/api/ai-chat', [AiChatController::class, 'chat'])->name('ai.chat');
 });

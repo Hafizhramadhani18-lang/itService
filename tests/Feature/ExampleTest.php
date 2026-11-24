@@ -2842,4 +2842,24 @@ class ExampleTest extends TestCase
         $resp->assertSee('Sab');
         $resp->assertSee('Min');
     }
+
+    public function test_ai_chatbox_virtual_assistant_returns_rag_sop_answers(): void
+    {
+        $pegawai = User::where('role', 'pegawai')->firstOrFail();
+
+        // Guest cannot access AI chat
+        $guestRes = $this->postJson('/api/ai-chat', ['message' => 'printer offline']);
+        $guestRes->assertStatus(401);
+
+        // Pegawai asks about printer
+        $res = $this->actingAs($pegawai)->postJson('/api/ai-chat', [
+            'message' => 'printer tidak bisa cetak kertas dan offline'
+        ]);
+
+        $res->assertStatus(200);
+        $res->assertJsonPath('success', true);
+        $this->assertNotNull($res->json('reply'));
+        $this->assertNotNull($res->json('wa_url'));
+        $this->assertStringContainsString('wa.me/6281234567890', $res->json('wa_url'));
+    }
 }
