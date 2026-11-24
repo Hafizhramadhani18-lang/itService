@@ -38,8 +38,8 @@
     <!-- Alert Notifikasi Flash -->
     @include('partials.flash-messages')
 
-    <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch min-h-[620px] lg:h-[720px] mb-6">
+    <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN (Tinggi pas, tidak memanjang ke bawah) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch h-[530px]">
         
         <!-- ============================================================== -->
         <!-- KOLOM KIRI (7-8 Kolom): RUANG KERJA ASISTEN AI IT INTERAKTIF  -->
