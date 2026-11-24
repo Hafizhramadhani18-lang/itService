@@ -197,7 +197,26 @@ Tugas Anda adalah:
      */
     private function buildLocalSopResponse(string $userMessage, string $userName, string $userDivisi, $matchedSop): array
     {
-        $lower = mb_strtolower($userMessage);
+        $lower = mb_strtolower(trim($userMessage));
+
+        // 0. Respon Percakapan Ramah / Sapaan (Greeting & Small-talk)
+        if (preg_match('/^(halo|hallo|hello|hi|hai|selamat\s+(pagi|siang|sore|malam)|assalamu[\'\w]*|pagi|siang|sore|malam|tes|test|ping)$/ui', $lower) ||
+            preg_match('/^(halo|hallo|hello|hi|hai)\b/ui', $lower) && mb_strlen($lower) <= 20) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**! 👋 Ada kendala perangkat atau sistem IT yang bisa saya bantu hari ini?\n\nAnda dapat menanyakan keluhan seperti komputer lambat/mati, printer offline, jaringan LAN putus, reset password domain, rumus Excel, atau klik tombol di bawah:",
+                'sop_title' => 'Asisten Virtual IT Support S2P Siaga',
+                'sop_kategori' => 'Layanan IT',
+                'steps' => [
+                    'Ketikkan langsung gejala atau kendala yang Anda alami di kolom chat.',
+                    'Gunakan menu referensi dokumen SOP resmi di samping kanan untuk panduan standar.',
+                    'Atau klik tombol WhatsApp di bawah jika membutuhkan kedatangan teknisi langsung ke ruangan Anda.'
+                ],
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo Helpdesk IT PT S2P, saya {$userName} dari divisi {$userDivisi} butuh bantuan."),
+                'ticket_url' => route('services.create'),
+            ];
+        }
 
         // 1. Diagnosa PC / Komputer / Laptop Mati Total, No Display, atau Mati Mendadak
         if (preg_match('/\b(mati|gak nyala|ngga nyala|tidak menyala|padam|no display|layar hitam|black screen|beep|mati total|matot)\b/u', $lower) && 
