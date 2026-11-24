@@ -73,6 +73,7 @@
         #main-content-wrapper {
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             will-change: margin-left, padding-left;
+            box-sizing: border-box;
         }
         @media (min-width: 768px) {
             #sidebar.sidebar-collapsed {
@@ -83,10 +84,14 @@
                 padding-left: 5.5rem !important; /* Ruang lega 88px di sisi kiri agar tombol Menu tidak menabrak form atau judul */
             }
         }
+        /* Hilangkan widget floating chat di halaman Asisten AI & SOP agar tidak dobel/tumpang tindih */
+        body.route-knowledge #ai-chatbox-container {
+            display: none !important;
+        }
     </style>
     @stack('styles')
 </head>
-<body class="bg-[#f8fafc] text-slate-800 antialiased min-h-screen overflow-x-hidden">
+<body class="bg-[#f8fafc] text-slate-800 antialiased min-h-screen overflow-x-hidden {{ request()->routeIs('knowledge.*') ? 'route-knowledge' : '' }}">
 
 @if(Auth::check() && Auth::user()->isPegawai())
     <!-- ========================================== -->

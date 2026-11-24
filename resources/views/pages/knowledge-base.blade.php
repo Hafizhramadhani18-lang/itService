@@ -3,20 +3,20 @@
 @section('title', 'Ruang Kerja Asisten AI & SOP IT Support')
 
 @section('content')
-<div class="space-y-6">
+<div class="space-y-4">
 
     <!-- Header: Judul di Kiri, Tombol Aksi & Widget Tanggal/Notifikasi di Kanan -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200/80 text-[11px] font-extrabold text-teal-800 mb-2">
+            <div class="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-teal-50 to-emerald-50 border border-teal-200/80 text-[10px] font-extrabold text-teal-800 mb-1.5">
                 <i class="fa-solid fa-wand-magic-sparkles text-amber-500 animate-pulse"></i>
                 <span>Ruang Kerja Asisten AI IT Support PT S2P PLTU Karangkandri</span>
             </div>
-            <h1 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
                 <span>{{ Auth::user()->isPegawai() ? 'Panduan Mandiri Pegawai' : 'Basis Pengetahuan & SOP Troubleshooting' }}</span>
-                <span class="text-xs px-2.5 py-0.5 rounded-full font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Online 24/7</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Online 24/7</span>
             </h1>
-            <p class="text-xs text-slate-500 mt-1 font-medium">
+            <p class="text-xs text-slate-500 mt-0.5 font-medium">
                 {{ Auth::user()->isPegawai() 
                     ? 'Tanyakan kendala Anda ke Asisten Virtual AI atau ikuti panduan mandiri resmi di samping.' 
                     : 'Pusat interaksi Asisten AI & katalog standar operasional prosedur penanganan gangguan IT PT S2P PLTU Karangkandri.' }}
@@ -39,7 +39,7 @@
     @include('partials.flash-messages')
 
     <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN (Tinggi pas, tidak memanjang ke bawah) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch h-[530px]">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch h-[calc(100vh-17.5rem)] min-h-[500px]">
         
         <!-- ============================================================== -->
         <!-- KOLOM KIRI (7-8 Kolom): RUANG KERJA ASISTEN AI IT INTERAKTIF  -->
