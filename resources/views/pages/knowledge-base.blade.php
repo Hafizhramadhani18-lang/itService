@@ -39,60 +39,60 @@
     @include('partials.flash-messages')
 
     <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch h-[calc(100vh-14rem)] min-h-[580px] max-h-[780px]">
         
         <!-- ============================================================== -->
         <!-- KOLOM KIRI (7-8 Kolom): RUANG KERJA ASISTEN AI IT INTERAKTIF  -->
         <!-- ============================================================== -->
-        <div class="lg:col-span-7 xl:col-span-8 flex flex-col bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden min-h-[640px] h-[780px]">
+        <div class="lg:col-span-7 xl:col-span-8 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
             
             <!-- Workspace Top Bar -->
-            <div class="px-5 py-4 bg-[#0e1a2b] text-white flex items-center justify-between border-b border-slate-800">
+            <div class="px-5 py-3.5 bg-[#0e1a2b] text-white flex items-center justify-between border-b border-slate-800 flex-shrink-0">
                 <div class="flex items-center space-x-3">
                     <div class="relative">
-                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow font-black">
-                            <i class="fa-solid fa-robot text-lg"></i>
+                        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white shadow font-black">
+                            <i class="fa-solid fa-robot text-base"></i>
                         </div>
-                        <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 border-2 border-[#0e1a2b] rounded-full"></span>
+                        <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 border-2 border-[#0e1a2b] rounded-full"></span>
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h2 class="font-extrabold text-sm text-white">Asisten Virtual IT Support AI</h2>
+                            <h2 class="font-extrabold text-xs sm:text-sm text-white">Asisten Virtual IT Support AI</h2>
                             <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Cerdas & Aktif</span>
                         </div>
-                        <p class="text-[11px] text-slate-300">Siap menjawab semua kendala IT, troubleshooting, & produktivitas kerja</p>
+                        <p class="text-[10px] text-slate-300">Siap menjawab semua kendala IT, troubleshooting, & produktivitas kerja</p>
                     </div>
                 </div>
 
                 <div class="flex items-center space-x-2">
                     <button type="button" onclick="clearWorkspaceChat()" 
-                            class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 text-xs transition cursor-pointer" 
+                            class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 text-xs transition cursor-pointer" 
                             title="Bersihkan Percakapan">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
                     <a href="https://wa.me/6281234567890?text={{ urlencode('Halo Helpdesk IT PT S2P PLTU Karangkandri, saya butuh bantuan teknisi.') }}" 
                        target="_blank" 
-                       class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-600 text-white text-xs font-bold transition shadow-xs">
-                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                       class="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-600 text-white text-[11px] font-bold transition shadow-xs">
+                        <i class="fa-brands fa-whatsapp text-xs"></i>
                         <span class="hidden sm:inline">WA Teknisi</span>
                     </a>
                 </div>
             </div>
 
             <!-- Workspace Messages History (Scrollable Area) -->
-            <div id="workspace-chat-messages" class="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4 bg-slate-50/60 text-xs leading-relaxed">
+            <div id="workspace-chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 bg-slate-50/60 text-xs leading-relaxed">
                 
                 <!-- Welcome Bot Card -->
-                <div class="flex items-start space-x-3.5 animate-fade-in">
-                    <div class="w-8 h-8 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-xs">
-                        <i class="fa-solid fa-headset text-sm"></i>
+                <div class="flex items-start space-x-3 animate-fade-in">
+                    <div class="w-7 h-7 rounded-lg bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-xs">
+                        <i class="fa-solid fa-headset text-xs"></i>
                     </div>
-                    <div class="flex-1 bg-white p-4 sm:p-5 rounded-2xl rounded-tl-sm border border-slate-200/90 shadow-xs space-y-3">
-                        <div class="font-bold text-slate-900 text-sm flex items-center justify-between">
+                    <div class="flex-1 bg-white p-3.5 sm:p-4 rounded-xl rounded-tl-sm border border-slate-200/90 shadow-2xs space-y-2.5">
+                        <div class="font-bold text-slate-900 text-xs sm:text-sm flex items-center justify-between">
                             <span>Halo {{ Auth::user()->name }}! 👋</span>
                             <span class="text-[10px] text-slate-400 font-normal">Baru saja</span>
                         </div>
-                        <p class="text-slate-600">
+                        <p class="text-slate-600 text-[11px]">
                             Saya <strong>Asisten AI IT Support PT S2P</strong>. Anda dapat bertanya mengenai apapun:
                         </p>
                         <ul class="list-disc list-inside text-slate-600 space-y-1 pl-1 text-[11px]">
@@ -103,32 +103,32 @@
 
                         <!-- Quick Starter Chips -->
                         <div class="pt-2 border-t border-slate-100">
-                            <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Pilih Cepat atau Ketik Sendiri:</div>
+                            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Pilih Cepat atau Ketik Sendiri:</div>
                             <div class="flex flex-wrap gap-1.5">
                                 <button type="button" onclick="askWorkspaceAi('Printer kantor saya mendadak offline dan antrian cetak macet, bagaimana cara memperbaikinya?')"
-                                        class="px-2.5 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[11px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
-                                    <i class="fa-solid fa-print text-[10px]"></i>
-                                    <span>Printer Error/Spooler</span>
+                                        class="px-2 py-1 rounded-md bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[10px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
+                                    <i class="fa-solid fa-print text-[9px]"></i>
+                                    <span>Printer Error</span>
                                 </button>
                                 <button type="button" onclick="askWorkspaceAi('Koneksi kabel LAN kantor tanda seru kuning No Internet, langkah diagnosanya apa saja?')"
-                                        class="px-2.5 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[11px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
-                                    <i class="fa-solid fa-network-wired text-[10px]"></i>
-                                    <span>Jaringan LAN Putus</span>
+                                        class="px-2 py-1 rounded-md bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[10px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
+                                    <i class="fa-solid fa-network-wired text-[9px]"></i>
+                                    <span>Jaringan LAN</span>
                                 </button>
                                 <button type="button" onclick="askWorkspaceAi('Komputer Windows mendadak freeze dan layar biru BSOD, bagaimana penanganannya?')"
-                                        class="px-2.5 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[11px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
-                                    <i class="fa-solid fa-laptop text-[10px]"></i>
+                                        class="px-2 py-1 rounded-md bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[10px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
+                                    <i class="fa-solid fa-laptop text-[9px]"></i>
                                     <span>PC Hang / BSOD</span>
                                 </button>
                                 <button type="button" onclick="askWorkspaceAi('Bagaimana rumus VLOOKUP atau XLOOKUP di Excel untuk mencocokkan data ID karyawan?')"
-                                        class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-200/60 transition cursor-pointer flex items-center space-x-1">
-                                    <i class="fa-solid fa-file-excel text-[10px]"></i>
-                                    <span>Rumus Excel VLOOKUP</span>
+                                        class="px-2 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200/60 transition cursor-pointer flex items-center space-x-1">
+                                    <i class="fa-solid fa-file-excel text-[9px]"></i>
+                                    <span>Rumus Excel</span>
                                 </button>
                                 <button type="button" onclick="askWorkspaceAi('Akun domain Windows saya terkunci dan lupa kata sandi login, bagaimana prosedurnya?')"
-                                        class="px-2.5 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[11px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
-                                    <i class="fa-solid fa-key text-[10px]"></i>
-                                    <span>Reset Password Domain</span>
+                                        class="px-2 py-1 rounded-md bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[10px] border border-teal-200/60 transition cursor-pointer flex items-center space-x-1">
+                                    <i class="fa-solid fa-key text-[9px]"></i>
+                                    <span>Reset Password</span>
                                 </button>
                             </div>
                         </div>
@@ -138,45 +138,45 @@
             </div>
 
             <!-- Typing Indicator (Hidden by default) -->
-            <div id="workspace-typing-indicator" class="hidden px-6 py-2.5 bg-slate-50 border-t border-slate-100 flex items-center space-x-2 text-slate-500 text-xs">
+            <div id="workspace-typing-indicator" class="hidden px-5 py-2 bg-slate-50 border-t border-slate-100 flex items-center space-x-2 text-slate-500 text-xs flex-shrink-0">
                 <div class="flex space-x-1">
                     <span class="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce"></span>
                     <span class="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce [animation-delay:0.2s]"></span>
                     <span class="w-1.5 h-1.5 bg-teal-600 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                 </div>
-                <span class="text-[11px] italic">Asisten AI sedang menyusun solusi teknis...</span>
+                <span class="text-[10px] italic">Asisten AI sedang menyusun solusi teknis...</span>
             </div>
 
-            <!-- Workspace Chat Input Area -->
-            <div class="p-4 bg-white border-t border-slate-200/90">
-                <form id="workspace-chat-form" onsubmit="handleWorkspaceSubmit(event)" class="space-y-2">
+            <!-- Workspace Chat Input Area (Form Rapi Standar Korporat) -->
+            <div class="p-3 bg-white border-t border-slate-200/90 flex-shrink-0">
+                <form id="workspace-chat-form" onsubmit="handleWorkspaceSubmit(event)" class="space-y-1.5">
                     <div class="relative flex items-center">
                         <textarea id="workspace-user-input" 
                                   rows="2"
                                   placeholder="Ketik pertanyaan atau kendala IT Anda di sini (Tekan Enter untuk kirim, Shift+Enter untuk baris baru)..."
-                                  class="w-full pl-4 pr-14 py-3 bg-slate-50 border border-slate-200/90 rounded-2xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-700/30 focus:border-teal-700 focus:bg-white resize-none transition"
+                                  class="w-full pl-3.5 pr-12 py-2 bg-slate-50/90 border border-slate-300 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700 focus:bg-white resize-none transition leading-normal"
                                   onkeydown="handleWorkspaceKeydown(event)"></textarea>
                         
                         <button type="submit" 
                                 id="workspace-send-btn"
-                                class="absolute right-2.5 p-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white shadow-xs transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                class="absolute right-2 p-2 rounded-lg bg-teal-700 hover:bg-teal-800 text-white shadow-xs transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center"
                                 title="Kirim Pertanyaan">
                             <i class="fa-solid fa-paper-plane text-xs"></i>
                         </button>
                     </div>
 
                     <!-- Footer Helpdesk Contacts Info -->
-                    <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 pt-1">
+                    <div class="flex items-center justify-between text-[10px] text-slate-500 px-1">
                         <div class="flex items-center space-x-2">
                             <span><i class="fa-solid fa-phone text-teal-600 mr-1"></i>Ext. 102</span>
                             <span>&bull;</span>
                             <span><i class="fa-brands fa-whatsapp text-emerald-600 mr-1"></i>0812-3456-7890</span>
                             <span class="hidden sm:inline">&bull;</span>
-                            <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-slate-500 mr-1"></i>itsupport@s2p.co.id</span>
+                            <span class="hidden sm:inline"><i class="fa-solid fa-envelope text-slate-400 mr-1"></i>itsupport@s2p.co.id</span>
                         </div>
                         <a href="{{ route('services.create') }}" class="font-bold text-teal-700 hover:text-teal-900 underline flex items-center space-x-1">
                             <span>Buat Tiket Servis</span>
-                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            <i class="fa-solid fa-arrow-right text-[9px]"></i>
                         </a>
                     </div>
                 </form>
@@ -187,19 +187,19 @@
         <!-- ============================================================== -->
         <!-- KOLOM KANAN (4-5 Kolom): KATALOG DOKUMEN SOP RESMI PLTU        -->
         <!-- ============================================================== -->
-        <div class="lg:col-span-5 xl:col-span-4 flex flex-col space-y-4">
+        <div class="lg:col-span-5 xl:col-span-4 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
             
             <!-- SOP Card Header & Search -->
-            <div class="bg-white p-4 rounded-3xl border border-slate-200/90 shadow-sm space-y-3">
+            <div class="p-3.5 bg-slate-50/80 border-b border-slate-200/90 space-y-2.5 flex-shrink-0">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h2 class="font-extrabold text-sm text-slate-900 flex items-center space-x-2">
+                        <h2 class="font-extrabold text-xs sm:text-sm text-slate-900 flex items-center space-x-1.5">
                             <i class="fa-solid fa-book-bookmark text-teal-700"></i>
                             <span>Dokumen SOP Resmi PLTU</span>
                         </h2>
-                        <p class="text-[10px] text-slate-500 mt-0.5">Standar operasional prosedur IT PT S2P</p>
+                        <p class="text-[10px] text-slate-500">Standar operasional prosedur IT PT S2P</p>
                     </div>
-                    <span id="sop-count-badge" class="px-2.5 py-1 rounded-full text-[10px] font-black bg-teal-50 text-teal-800 border border-teal-200">
+                    <span id="sop-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-50 text-teal-800 border border-teal-200">
                         <span id="sop-count-text">{{ $guides->count() }} SOP</span>
                     </span>
                 </div>
@@ -207,17 +207,17 @@
                 <!-- Input Cari SOP -->
                 <div class="relative">
                     <input type="text" id="sop-search" value="{{ request('search') }}" onkeyup="filterSopCatalog()" placeholder="Cari SOP (printer, lan, email, sap)..."
-                           class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700 transition">
+                           class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-700/20 focus:border-teal-700 transition">
                     <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
-                        <i class="fa-solid fa-magnifying-glass text-[11px]"></i>
+                        <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
                     </span>
                 </div>
 
                 <!-- Category & Target Filter Controls -->
-                <div class="space-y-2 pt-1">
+                <div class="space-y-1.5">
                     <div class="flex items-center space-x-2">
                         <select id="select-kategori" onchange="filterCatalogCategory(this.value)" 
-                                class="w-full text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800 focus:outline-none focus:border-teal-700">
+                                class="w-full text-[11px] font-semibold bg-white border border-slate-200 rounded-lg px-2 py-1 text-slate-800 focus:outline-none focus:border-teal-700">
                             <option value="all">Semua SOP ({{ $guides->count() }})</option>
                             @foreach($categories as $cat)
                                 <option value="{{ $cat }}">{{ $cat }}</option>
@@ -226,9 +226,9 @@
 
                         @if(Auth::user()->isTeknisi() || Auth::user()->isAdmin())
                         <div class="flex items-center space-x-1 flex-shrink-0 text-xs">
-                            <span class="text-slate-500 font-bold text-[10px]">Target:</span>
+                            <span class="text-slate-500 font-bold text-[9px]">Target:</span>
                             <select id="select-audience" onchange="filterAudience(this.value)" 
-                                    class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-slate-800 focus:outline-none">
+                                    class="text-[11px] font-semibold bg-white border border-slate-200 rounded-lg px-1.5 py-1 text-slate-800 focus:outline-none">
                                 <option value="all">Semua</option>
                                 <option value="teknisi">🔒 Teknisi</option>
                                 <option value="all_users">👥 Pegawai</option>
@@ -238,14 +238,14 @@
                     </div>
 
                     <!-- Category Filter Pills -->
-                    <div class="flex flex-wrap gap-1.5">
+                    <div class="flex flex-wrap gap-1">
                         <button type="button" onclick="filterCatalogCategory('all')" 
-                                class="cat-pill active px-2.5 py-1 rounded-lg text-[10px] font-bold bg-teal-800 text-white transition cursor-pointer">
+                                class="cat-pill active px-2 py-0.5 rounded-md text-[9px] font-bold bg-teal-800 text-white transition cursor-pointer">
                             Semua
                         </button>
                         @foreach($categories as $cat)
                         <button type="button" onclick="filterCatalogCategory('{{ $cat }}')" 
-                                class="cat-pill px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                                class="cat-pill px-2 py-0.5 rounded-md text-[9px] font-semibold bg-slate-200/80 hover:bg-slate-300 text-slate-700 transition cursor-pointer"
                                 data-cat="{{ $cat }}">
                             {{ $cat }}
                         </button>
@@ -254,7 +254,7 @@
                 </div>
             </div>
 
-            <!-- Scrollable SOP Document Cards List -->
+            <!-- Scrollable SOP Document Cards List (Sinkron penuh dengan tinggi kolom kiri) -->
             @php
                 $assignedTopicAnchors = [
                     'printer' => false,
@@ -262,7 +262,119 @@
                     'jaringan' => false,
                 ];
             @endphp
-            <div id="sop-catalog-list" class="space-y-3 overflow-y-auto max-h-[660px] pr-1">
+            <div id="sop-catalog-list" class="flex-1 space-y-2.5 overflow-y-auto p-3 bg-slate-50/50">
+                @forelse($guides as $guide)
+                @php
+                    $guideSearchable = strtolower($guide->judul . ' ' . $guide->kategori . ' ' . $guide->tag . ' ' . $guide->pengantar);
+                    $cardAnchorId = null;
+                    if (!$assignedTopicAnchors['printer'] && (str_contains($guideSearchable, 'printer') || str_contains($guideSearchable, 'cetak') || str_contains($guideSearchable, 'spooler'))) {
+                        $cardAnchorId = 'printer';
+                        $assignedTopicAnchors['printer'] = true;
+                    } elseif (!$assignedTopicAnchors['akun'] && (str_contains($guideSearchable, 'akun') || str_contains($guideSearchable, 'password') || str_contains($guideSearchable, 'sandi') || str_contains($guideSearchable, 'email'))) {
+                        $cardAnchorId = 'akun';
+                        $assignedTopicAnchors['akun'] = true;
+                    } elseif (!$assignedTopicAnchors['jaringan'] && (str_contains($guideSearchable, 'jaringan') || str_contains($guideSearchable, 'wi-fi') || str_contains($guideSearchable, 'wifi') || str_contains($guideSearchable, 'ip') || str_contains($guideSearchable, 'lan'))) {
+                        $cardAnchorId = 'jaringan';
+                        $assignedTopicAnchors['jaringan'] = true;
+                    }
+                @endphp
+                <div @if($cardAnchorId) id="{{ $cardAnchorId }}" @endif
+                     class="sop-catalog-card bg-white p-3 rounded-xl border border-slate-200 shadow-2xs hover:shadow-sm hover:border-teal-400 transition flex flex-col justify-between"
+                     data-category="{{ $guide->kategori }}"
+                     data-audience="{{ $guide->target_audience }}"
+                     data-search="{{ strtolower($guide->judul . ' ' . $guide->kategori . ' ' . $guide->tag . ' ' . $guide->pengantar) }}"
+                     data-id="{{ $guide->id }}">
+                    
+                    <div>
+                        <div class="flex items-center justify-between gap-1.5 mb-1">
+                            <span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider {{ $guide->kategori_badge_class }}">
+                                {{ $guide->kategori }}
+                            </span>
+                            <span class="text-[9px] text-slate-400 font-medium">
+                                <i class="fa-regular fa-clock mr-0.5"></i> {{ $guide->estimasi_menit ?? 5 }} mnt
+                            </span>
+                        </div>
+
+                        <h3 class="text-[11px] font-extrabold text-slate-900 hover:text-teal-800 transition line-clamp-2 leading-snug">
+                            {{ $guide->judul }}
+                        </h3>
+
+                        <p class="text-[10px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                            {{ $guide->pengantar }}
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center space-x-1.5 pt-2 mt-2 border-t border-slate-100">
+                        <button type="button" 
+                                onclick="openSopDetailModal({{ $guide->id }})"
+                                class="flex-1 py-1 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold transition text-center cursor-pointer flex items-center justify-center space-x-1">
+                            <i class="fa-regular fa-file-lines text-[9px]"></i>
+                            <span>Detail</span>
+                        </button>
+
+                        <button type="button" 
+                                onclick="askWorkspaceAi('Bantu saya panduan langkah untuk SOP: {{ addslashes($guide->judul) }}')"
+                                class="py-1 px-2 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 text-[10px] font-bold border border-teal-200/60 transition cursor-pointer flex items-center space-x-1"
+                                title="Tanyakan ke Asisten AI">
+                            <i class="fa-solid fa-wand-magic-sparkles text-[9px] text-teal-600"></i>
+                            <span>Tanya AI</span>
+                        </button>
+
+                        @if(Auth::user()->isTeknisi() || Auth::user()->isAdmin())
+                        <div class="flex items-center space-x-0.5">
+                            <a href="{{ route('knowledge.edit', $guide->id) }}" 
+                               class="p-1 rounded-md text-slate-400 hover:text-teal-700 hover:bg-teal-50 transition" 
+                               title="Edit SOP">
+                                <i class="fa-regular fa-pen-to-square text-[10px]"></i>
+                            </a>
+                            <form action="{{ route('knowledge.destroy', $guide->id) }}" method="POST" onsubmit="return confirm('Hapus SOP {{ addslashes($guide->judul) }}?')" class="inline">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer" title="Hapus SOP">
+                                    <i class="fa-regular fa-trash-can text-[10px]"></i>
+                                    <span class="sr-only">Hapus</span>
+                                </button>
+                            </form>
+                        </div>
+                        @endif
+                    </div>
+
+                    <!-- Hidden JSON data for modal -->
+                    <script type="application/json" id="sop-json-{{ $guide->id }}">
+                        {!! json_encode([
+                            'id' => $guide->id,
+                            'judul' => $guide->judul,
+                            'kategori' => $guide->kategori,
+                            'kategori_badge' => $guide->kategori_badge_class,
+                            'pengantar' => $guide->pengantar,
+                            'area_penerapan' => $guide->area_penerapan,
+                            'estimasi' => $guide->estimasi_menit ?? 5,
+                            'langkah' => $guide->langkah_langkah ?? [],
+                            'skema_kabel' => $guide->skema_kabel,
+                            'judul_perintah' => $guide->judul_perintah,
+                            'perintah_cmd' => $guide->perintah_cmd,
+                            'peringatan' => $guide->peringatan,
+                        ]) !!}
+                    </script>
+                </div>
+                @empty
+                <div class="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500">
+                    <i class="fa-solid fa-folder-open text-2xl text-slate-300 mb-1"></i>
+                    <p class="text-[11px]">Belum ada panduan SOP yang terbit.</p>
+                </div>
+                @endforelse
+
+                <div id="no-catalog-results" class="hidden bg-white p-6 rounded-xl border border-dashed border-slate-300 text-center text-slate-500">
+                    <i class="fa-solid fa-magnifying-glass text-xl text-slate-300 mb-1"></i>
+                    <p class="text-[11px] font-semibold">Tidak ada SOP yang cocok dengan pencarian.</p>
+                    <button type="button" onclick="resetCatalogFilters()" class="mt-1.5 text-teal-700 underline text-[10px] font-bold">Tampilkan Semua</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
                 @forelse($guides as $guide)
                 @php
                     $guideSearchable = strtolower($guide->judul . ' ' . $guide->kategori . ' ' . $guide->tag . ' ' . $guide->pengantar);
