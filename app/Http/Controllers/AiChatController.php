@@ -134,12 +134,12 @@ class AiChatController extends Controller
                 $contextText .= "SOP tersedia mencakup: Printer, Jaringan LAN/Wi-Fi, Komputer Hang/Bluescreen, Reset Password Domain, Outlook/Email, SAP/Maximo PLTU, Proyektor Ruang Rapat.\n";
             }
 
-            $systemPrompt = "Anda adalah Asisten Virtual AI IT Support resmi PT Sumber Segara Primadaya (S2P) - PLTU Karangkandri Cilacap.
-Tugas Anda adalah membantu karyawan ({$userName} dari divisi {$userDivisi}) yang menghadapi gangguan perangkat atau sistem IT.
-Gunakan data SOP yang disediakan di bawah ini sebagai rujukan utama.
-Jawab dengan gaya profesional, sopan, empatik, terstruktur (gunakan poin 1, 2, 3), dan mudah dipahami.
-Sertakan perintah teknis jika ada.
-Di akhir jawaban, sampaikan bahwa jika kendala belum terselesaikan, teknisi Helpdesk IT siap membantu via WhatsApp (0812-3456-7890) atau tiket servis.";
+            $systemPrompt = "Anda adalah Asisten Virtual AI IT Support cerdas untuk PT Sumber Segara Primadaya (S2P) - PLTU Karangkandri Cilacap.
+Tugas Anda adalah:
+1. Menjawab pertanyaan pengguna ({$userName} dari divisi {$userDivisi}) mengenai kendala perangkat IT, software, sistem, jaringan, maupun pertanyaan umum IT (seperti rumus Excel/Word, shortcut Windows, troubleshooting hardware, tips produktivitas kantor, dsb).
+2. Jika pertanyaan berkaitan dengan operasional atau SOP PLTU (printer, LAN, domain, akun PLTU, SAP/Maximo, dsb), prioritaskan rujukan SOP resmi yang terlampir.
+3. Jawab dengan bahasa Indonesia yang ramah, sopan, jelas, terstruktur (gunakan bullet points atau penomoran 1, 2, 3), serta berikan solusi langsung yang aplikatif.
+4. Di bagian akhir, tambahkan catatan ramah bahwa jika kendala memerlukan penanganan fisik di tempat, pengguna dapat membuat Tiket Servis atau menghubungi Helpdesk IT via WhatsApp (0812-3456-7890).";
 
             $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
@@ -181,6 +181,71 @@ Di akhir jawaban, sampaikan bahwa jika kendala belum terselesaikan, teknisi Help
      */
     private function buildLocalSopResponse(string $userMessage, string $userName, string $userDivisi, $matchedSop): array
     {
+        $lower = mb_strtolower($userMessage);
+
+        // Smart general IT patterns (Excel, shortcuts, browser cache, display/proyektor, mouse/keyboard)
+        if (str_contains($lower, 'excel') || str_contains($lower, 'vlookup') || str_contains($lower, 'rumus') || str_contains($lower, 'if(') || str_contains($lower, 'sumif')) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, berikut panduan singkat fungsi & rumus Microsoft Excel yang sering digunakan untuk administrasi PLTU:",
+                'sop_title' => 'Tips & Rumus Produktivitas Microsoft Excel',
+                'sop_kategori' => 'Aplikasi & Email',
+                'steps' => [
+                    '**VLOOKUP**: `=VLOOKUP(nilai_kunci, rentang_tabel, nomor_kolom, FALSE)` — mencari data dari kolom kiri ke kanan secara persis.',
+                    '**XLOOKUP** (Excel modern): `=XLOOKUP(nilai_cari, kolom_cari, kolom_hasil)` — lebih fleksibel dibanding VLOOKUP.',
+                    '**IF / Logika**: `=IF(kondisi, "Jika Benar", "Jika Salah")` — untuk conditional status (misal: Lulus/Tidak Lulus).',
+                    '**SUMIFS**: `=SUMIFS(kolom_jumlah, kolom_kriteria1, "kriteria1")` — menjumlahkan angka berdasarkan kondisi tertentu.',
+                    '**Tips Error #N/A**: Gunakan `=IFERROR(rumus, "-")` agar tampilan tabel tetap rapi jika data tidak ditemukan.'
+                ],
+                'warning' => 'Pastikan pemisah tanda rumus di Excel Anda (koma `,` atau titik koma `;`) sesuai pengaturan Regional Windows komputer Anda.',
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, saya butuh asistensi formula Excel dari divisi {$userDivisi}"),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
+
+        if (str_contains($lower, 'shortcut') || str_contains($lower, 'tombol') || str_contains($lower, 'keyboard') || str_contains($lower, 'kombinasi')) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, berikut kumpulan pintasan keyboard (Windows Shortcuts) paling praktis untuk efisiensi kerja harian:",
+                'sop_title' => 'Pintasan Keyboard Windows (Shortcuts)',
+                'sop_kategori' => 'Hardware & PC',
+                'steps' => [
+                    '**Win + Shift + S**: Tangkap layar (Screenshot selektif area) langsung simpan di clipboard.',
+                    '**Win + V**: Membuka Clipboard History (melihat riwayat teks/gambar yang pernah di-copy).',
+                    '**Win + D**: Minimize semua jendela dan langsung kembali ke Desktop.',
+                    '**Win + L**: Mengunci PC/Laptop seketika saat meninggalkan meja (Penting untuk keamanan data PLTU!).',
+                    '**Ctrl + Shift + Esc**: Membuka Task Manager langsung untuk memantau aplikasi berat/hang.',
+                    '**Win + E**: Membuka File Explorer dengan cepat.'
+                ],
+                'warning' => 'Selalu kunci layar (Win + L) saat meninggalkan komputer demi keamanan data operasional PLTU.',
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, konsultasi shortcut/keyboard dari {$userName}"),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
+
+        if (str_contains($lower, 'cache') || str_contains($lower, 'history') || str_contains($lower, 'chrome') || str_contains($lower, 'browser') || str_contains($lower, 'lemot web')) {
+            return [
+                'success' => true,
+                'source' => 'local_ai_knowledge',
+                'reply' => "Halo **{$userName}**, kendala web portal/aplikasi web lambat atau tombol tidak merespon biasanya dapat diselesaikan dengan membersihkan cache browser:",
+                'sop_title' => 'Pembersihan Cache & Cookie Browser Web',
+                'sop_kategori' => 'Aplikasi & Email',
+                'steps' => [
+                    'Buka browser (Google Chrome / Microsoft Edge).',
+                    'Tekan kombinasi tombol **Ctrl + Shift + Delete** di keyboard.',
+                    'Pilih Rentang Waktu: **Semua Waktu (All time)**.',
+                    'Centang opsi **Gambar dan file dalam cache** serta **Cookie dan data situs lainnya**.',
+                    'Klik **Hapus data (Clear data)**, lalu tutup dan buka kembali browser Anda.'
+                ],
+                'cmd_title' => 'Hard Reload Shortcut',
+                'cmd' => 'Ctrl + F5',
+                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, bantuan web browser dari {$userName}"),
+                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
+            ];
+        }
+
         if ($matchedSop) {
             $reply = "Berdasarkan **{$matchedSop->judul}** (Kategori: {$matchedSop->kategori}), berikut adalah diagnosa dan langkah penanganan mandiri yang dapat Anda coba:";
 

@@ -132,10 +132,11 @@
                                 </span>
                             @endif
                         </a>
-                        <!-- Panduan Mandiri -->
+                        <!-- Asisten AI & Panduan -->
                         <a href="{{ route('knowledge.base') }}" 
-                           class="px-4 py-1.5 rounded-full text-xs font-semibold transition {{ request()->routeIs('knowledge.*') ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-[#152438]' }}">
-                            Panduan Mandiri
+                           class="px-4 py-1.5 rounded-full text-xs font-semibold transition inline-flex items-center space-x-1.5 {{ request()->routeIs('knowledge.*') ? 'bg-teal-700 text-white shadow-xs' : 'text-slate-300 hover:text-white hover:bg-[#152438]' }}">
+                            <i class="fa-solid fa-wand-magic-sparkles text-[11px] text-teal-300"></i>
+                            <span>Asisten AI & Panduan</span>
                         </a>
                     </nav>
 
@@ -234,7 +235,7 @@
                     @endif
                 </a>
                 <a href="{{ route('knowledge.base') }}" class="block px-3 py-2 rounded-lg text-xs font-semibold {{ request()->routeIs('knowledge.*') ? 'bg-teal-700 text-white' : 'text-slate-300 hover:bg-[#152438]' }}">
-                    <i class="fa-solid fa-book-bookmark w-5 mr-1 text-teal-400"></i> Panduan Mandiri
+                    <i class="fa-solid fa-wand-magic-sparkles w-5 mr-1 text-teal-400"></i> Asisten AI & Panduan
                 </a>
                 <a href="{{ route('profile.edit') }}" class="block px-3 py-2 rounded-lg text-xs font-semibold {{ request()->routeIs('profile*') ? 'bg-teal-700 text-white' : 'text-slate-300 hover:bg-[#152438]' }}">
                     <i class="fa-regular fa-user w-5 mr-1 text-teal-400"></i> Pengaturan Profil
@@ -418,12 +419,12 @@
                             <span>Data Master</span>
                         </a>
 
-                        <!-- Basis Pengetahuan -->
+                        <!-- Basis Pengetahuan & Asisten AI -->
                         <a href="{{ route('knowledge.base') }}" 
                            class="group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition {{ request()->routeIs('knowledge.*') ? 'bg-[#1a2f47] text-white shadow-xs' : 'text-slate-300 hover:bg-[#152438] hover:text-white' }}">
                             <div class="flex items-center min-w-0">
-                                <i class="fa-solid fa-book-bookmark w-5 text-center mr-2.5 text-xs {{ request()->routeIs('knowledge.*') ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
-                                <span class="truncate">Basis Pengetahuan</span>
+                                <i class="fa-solid fa-wand-magic-sparkles w-5 text-center mr-2.5 text-xs {{ request()->routeIs('knowledge.*') ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                                <span class="truncate">Asisten AI & SOP</span>
                             </div>
                             @if(($sidebarPendingSopCount ?? 0) > 0)
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 ml-2 flex-shrink-0" title="{{ $sidebarPendingSopCount }} SOP menunggu persetujuan">
@@ -511,11 +512,11 @@
                         <span>Riwayat Tiket</span>
                     </a>
 
-                    <!-- Basis Pengetahuan -->
+                    <!-- Asisten AI & SOP -->
                     <a href="{{ route('knowledge.base') }}" 
                        class="group flex items-center px-3.5 py-2.5 rounded-xl text-xs font-semibold transition {{ request()->routeIs('knowledge.*') ? 'bg-[#1a2f47] text-white shadow-xs' : 'text-slate-300 hover:bg-[#152438] hover:text-white' }}">
-                        <i class="fa-solid fa-book-bookmark w-5 text-center mr-2.5 text-xs {{ request()->routeIs('knowledge.*') ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
-                        <span>Basis Pengetahuan</span>
+                        <i class="fa-solid fa-wand-magic-sparkles w-5 text-center mr-2.5 text-xs {{ request()->routeIs('knowledge.*') ? 'text-teal-400' : 'text-slate-500 group-hover:text-slate-300' }}"></i>
+                        <span>Asisten AI & SOP</span>
                     </a>
 
                     <div class="pt-4 mt-4 border-t border-slate-800/80">
