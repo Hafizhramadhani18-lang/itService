@@ -98,7 +98,7 @@
     <!-- LAYOUT KHUSUS PEGAWAI / KARYAWAN DIVISI   -->
     <!-- (Horizontal Top Navigation Bar PLTU S2P)   -->
     <!-- ========================================== -->
-    <div class="min-h-screen flex flex-col bg-[#f8fafc]">
+    <div class="min-h-screen flex flex-col bg-[#f8fafc] {{ request()->routeIs('knowledge.*') ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : '' }}">
         
         <!-- TOP NAVBAR PEGAWAI -->
         <header class="bg-[#0e1a2b] border-b border-slate-800 text-white sticky top-0 z-50 shadow-md">
@@ -249,12 +249,12 @@
         </header>
 
         <!-- Main Content Area Pegawai -->
-        <main class="flex-1 p-4 sm:p-8 max-w-7xl w-full mx-auto">
+        <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full mx-auto {{ request()->routeIs('knowledge.*') ? 'flex flex-col min-h-0 overflow-hidden' : '' }}">
             @yield('content')
         </main>
 
         <!-- Footer -->
-        <footer class="bg-white border-t border-slate-200 text-slate-400 py-4 px-4 sm:px-8 text-[11px] mt-auto">
+        <footer class="bg-white border-t border-slate-200 text-slate-400 py-3.5 px-4 sm:px-8 text-[11px] mt-auto flex-shrink-0">
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
                 <div class="flex items-center space-x-2">
                     <span class="font-bold text-slate-600">&copy; {{ date('Y') }} PT Sumber Segara Primadaya (S2P)</span>
@@ -623,7 +623,7 @@
         </aside>
 
         <!-- RIGHT: MAIN CONTENT WRAPPER TEKNISI / ADMIN -->
-        <div id="main-content-wrapper" class="flex-1 flex flex-col min-w-0 bg-[#f8fafc] md:ml-64">
+        <div id="main-content-wrapper" class="flex-1 flex flex-col min-w-0 bg-[#f8fafc] md:ml-64 min-h-screen {{ request()->routeIs('knowledge.*') ? 'lg:h-screen lg:max-h-screen lg:overflow-hidden' : '' }}">
             <script>
                 // Instant load preference to avoid layout flash
                 if (window.innerWidth >= 768 && localStorage.getItem('sidebar_collapsed_pref') === '1') {
@@ -672,12 +672,12 @@
             </script>
 
             <!-- Page Body Content -->
-            <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full {{ request()->routeIs('knowledge.*') ? 'flex flex-col' : '' }}">
+            <main class="flex-1 p-4 sm:p-6 max-w-7xl w-full {{ request()->routeIs('knowledge.*') ? 'flex flex-col min-h-0 overflow-hidden' : '' }}">
                 @yield('content')
             </main>
 
             <!-- Footer -->
-            <footer class="bg-white border-t border-slate-200 text-slate-400 py-3.5 px-6 sm:px-8 text-[11px] mt-auto">
+            <footer class="bg-white border-t border-slate-200 text-slate-400 py-3.5 px-6 sm:px-8 text-[11px] mt-auto flex-shrink-0">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-2">
                     <div class="flex items-center space-x-2">
                         <span class="font-bold text-slate-600">&copy; {{ date('Y') }} PT Sumber Segara Primadaya (S2P)</span>

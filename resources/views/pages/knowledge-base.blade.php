@@ -39,7 +39,7 @@
     @include('partials.flash-messages')
 
     <!-- DUAL LAYOUT: WORKSPACE AI CHAT DI KIRI & KATALOG SOP RESMI DI KANAN (Tinggi pas 1 layar, tidak memanjang ke bawah) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-[480px] max-h-[600px]">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0">
         
         <!-- ============================================================== -->
         <!-- KOLOM KIRI (7-8 Kolom): RUANG KERJA ASISTEN AI IT INTERAKTIF  -->
