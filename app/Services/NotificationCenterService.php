@@ -389,6 +389,43 @@ class NotificationCenterService
             ];
         }
 
+        // 9. Jadwal PM Hari Ini & Terlambat untuk Admin (Monitoring Koordinator IT)
+        $todayStr = now()->toDateString();
+        $adminPmDueTasks = \App\Models\MaintenanceLog::whereIn('status', ['Terjadwal', 'Terlambat'])
+            ->where(function ($q) use ($todayStr) {
+                $q->whereDate('tanggal_cek', $todayStr)
+                  ->orWhere(function ($lateQ) use ($todayStr) {
+                      $lateQ->where('status', 'Terlambat')
+                            ->orWhereDate('tanggal_cek', '<', $todayStr);
+                  });
+            })
+            ->orderBy('tanggal_cek', 'asc')
+            ->take(4)
+            ->get();
+
+        foreach ($adminPmDueTasks as $pm) {
+            $tglJadwal = $pm->tanggal_cek ? $pm->tanggal_cek->format('d/m/Y') : '-';
+            $jamSuffix = $pm->jam_mulai ? ' · ' . str_replace(':', '.', substr($pm->jam_mulai, 0, 5)) . ' WIB' : '';
+            $isLate = $pm->isTerlambat();
+            $pic = $pm->teknisi_nama ?: ($pm->tim ?: 'Tim IT');
+            $ts = now()->startOfDay()->addHours(7);
+
+            $items[] = [
+                'id' => 'pm_admin_due_' . $pm->id . '_' . ($pm->tanggal_cek ? $pm->tanggal_cek->format('Ymd') : '0'),
+                'service_id' => $pm->id,
+                'type' => $isLate ? 'urgent' : 'assigned',
+                'icon' => $isLate ? 'fa-solid fa-triangle-exclamation' : 'fa-solid fa-calendar-check',
+                'icon_bg' => $isLate ? 'bg-rose-50 text-rose-600' : 'bg-teal-50 text-teal-600',
+                'title' => $isLate ? 'Jadwal PM terlambat (belum selesai)' : 'Jadwal PM hari ini',
+                'subtitle' => "{$pm->nama_perangkat} ({$pm->frekuensi_label}) · PIC: {$pic} · {$tglJadwal}{$jamSuffix}",
+                'time_label' => $isLate ? 'Terlambat' : 'Hari ini',
+                'timestamp' => $ts,
+                'url' => route('maintenance.index', ['frekuensi' => 'semua']),
+                'force_unread' => true,
+                'is_today' => true,
+            ];
+        }
+
         return $items;
     }
 
@@ -678,28 +715,33 @@ class NotificationCenterService
                 ? $updatedTs
                 : (($isDueToday || $isDueTomorrow || $isLate) ? now()->startOfDay()->addHours(7) : $updatedTs);
 
+            $freqLabel = $pm->frekuensi_label;
             if ($isLate) {
                 $title = 'Jadwal PM melewati batas waktu';
                 $lateInfo = $pm->late_days_text ? " · {$pm->late_days_text}" : '';
-                $subtitle = "{$pm->nama_perangkat} ({$pm->lokasi_ruangan}){$lateInfo}";
+                $teamTag = $isUnassigned ? ' · [Tugas Tim]' : '';
+                $subtitle = "{$pm->nama_perangkat} ({$freqLabel}) · {$pm->lokasi_ruangan}{$teamTag}{$lateInfo}";
                 $type = 'urgent';
                 $icon = 'fa-solid fa-calendar-xmark';
                 $iconBg = 'bg-rose-50 text-rose-600';
             } elseif ($isDueToday) {
                 $title = 'Jadwal PM hari ini';
-                $subtitle = "{$pm->nama_perangkat} ({$pm->lokasi_ruangan}) · {$tglJadwal}{$jamSuffix}";
+                $teamTag = $isUnassigned ? ' · [Tugas Tim]' : '';
+                $subtitle = "{$pm->nama_perangkat} ({$freqLabel}) · {$pm->lokasi_ruangan}{$teamTag} · {$tglJadwal}{$jamSuffix}";
                 $type = 'assigned';
                 $icon = 'fa-regular fa-calendar-check';
                 $iconBg = 'bg-teal-50 text-teal-600';
             } elseif ($isDueTomorrow && !$updatedTs->isToday()) {
                 $title = 'Pengingat PM besok (H-1)';
-                $subtitle = "{$pm->nama_perangkat} ({$pm->lokasi_ruangan}) · besok {$tglJadwal}{$jamSuffix}";
+                $teamTag = $isUnassigned ? ' · [Tugas Tim]' : '';
+                $subtitle = "{$pm->nama_perangkat} ({$freqLabel}) · {$pm->lokasi_ruangan}{$teamTag} · besok {$tglJadwal}{$jamSuffix}";
                 $type = 'assigned';
                 $icon = 'fa-regular fa-bell';
                 $iconBg = 'bg-sky-50 text-sky-600';
             } else {
                 $title = $isUnassigned ? 'Jadwal PM baru untuk tim' : 'Penugasan pemeliharaan baru (PM)';
-                $subtitle = "{$pm->nama_perangkat} ({$pm->lokasi_ruangan}) · jadwal {$tglJadwal}{$jamSuffix}";
+                $teamTag = $isUnassigned ? ' · [Tugas Tim]' : '';
+                $subtitle = "{$pm->nama_perangkat} ({$freqLabel}) · {$pm->lokasi_ruangan}{$teamTag} · jadwal {$tglJadwal}{$jamSuffix}";
                 $type = 'assigned';
                 $icon = 'fa-regular fa-calendar-check';
                 $iconBg = 'bg-teal-50 text-teal-600';

@@ -202,6 +202,46 @@ class MaintenanceController extends Controller
             });
         }
 
+        // Filter Frekuensi PM (Sekali, Mingguan, Bulanan, Tahunan, Tim)
+        $selectedFrekuensi = strtolower(trim((string) $request->get('frekuensi', 'semua')));
+        $applyFreqFilter = function ($q, $freq) {
+            if ($freq === 'sekali') {
+                $q->where(function ($sub) {
+                    $sub->whereHas('jadwal', fn($js) => $js->where('frekuensi', 'like', '%sekali%'))
+                        ->orWhere('tindakan', 'like', '%sekali%')
+                        ->orWhere('kegiatan', 'like', '%sekali%');
+                });
+            } elseif ($freq === 'mingguan') {
+                $q->where(function ($sub) {
+                    $sub->whereHas('jadwal', fn($js) => $js->where('frekuensi', 'like', '%minggu%'))
+                        ->orWhere('tindakan', 'like', '%minggu%')
+                        ->orWhere('kegiatan', 'like', '%minggu%');
+                });
+            } elseif ($freq === 'bulanan') {
+                $q->where(function ($sub) {
+                    $sub->whereHas('jadwal', fn($js) => $js->where('frekuensi', 'like', '%bulan%')->where('frekuensi', 'not like', '%3 bulan%'))
+                        ->orWhere(function ($m) {
+                            $m->whereDoesntHave('jadwal')
+                              ->where('tindakan', 'not like', '%minggu%')
+                              ->where('tindakan', 'not like', '%tahun%')
+                              ->where('tindakan', 'not like', '%sekali%');
+                        });
+                });
+            } elseif ($freq === 'tahunan') {
+                $q->where(function ($sub) {
+                    $sub->whereHas('jadwal', fn($js) => $js->where('frekuensi', 'like', '%tahun%'))
+                        ->orWhere('tindakan', 'like', '%tahun%')
+                        ->orWhere('kegiatan', 'like', '%tahun%');
+                });
+            } elseif ($freq === 'tim') {
+                $q->whereNull('user_id');
+            }
+        };
+
+        if ($selectedFrekuensi !== 'semua') {
+            $applyFreqFilter($query, $selectedFrekuensi);
+        }
+
         $logs = $query->paginate(15)->withQueryString();
 
         // Query basis statistik aktif (menyesuaikan tab aktif & periode yang sama persis dengan tabel)
@@ -241,6 +281,19 @@ class MaintenanceController extends Controller
             } else {
                 $statsQuery->where('teknisi_nama', 'like', "%{$selectedTeknisi}%");
             }
+        }
+
+        // Hitung total untuk tombol filter frekuensi PM
+        $countFreqSemua = (clone $statsQuery)->count();
+        $countFreqSekali = (clone $statsQuery)->tap(fn($q) => $applyFreqFilter($q, 'sekali'))->count();
+        $countFreqMingguan = (clone $statsQuery)->tap(fn($q) => $applyFreqFilter($q, 'mingguan'))->count();
+        $countFreqBulanan = (clone $statsQuery)->tap(fn($q) => $applyFreqFilter($q, 'bulanan'))->count();
+        $countFreqTahunan = (clone $statsQuery)->tap(fn($q) => $applyFreqFilter($q, 'tahunan'))->count();
+        $countFreqTim = (clone $statsQuery)->whereNull('user_id')->count();
+
+        // Jika filter frekuensi aktif, sinkronkan juga kartu metrik
+        if ($selectedFrekuensi !== 'semua') {
+            $applyFreqFilter($statsQuery, $selectedFrekuensi);
         }
 
         // 4 Kartu Metrik Persis Mockup Referensi Admin:
@@ -347,7 +400,7 @@ class MaintenanceController extends Controller
         // Jadwal PM yang ditugaskan khusus untuk teknisi yang sedang login (porsi tugas teknisi)
         $myUpcomingSchedules = collect();
         if ($currentUser && $currentUser->isTeknisi()) {
-            $myUpcomingSchedules = MaintenanceLog::where(function ($q) use ($currentUser) {
+            $upcomingQ = MaintenanceLog::where(function ($q) use ($currentUser) {
                     $q->ownedByTeknisi($currentUser)
                       ->orWhere(function ($unassigned) use ($currentUser) {
                           $unassigned->whereNull('user_id')
@@ -358,9 +411,13 @@ class MaintenanceController extends Controller
                       });
                 })
                 ->whereIn('status', ['Terjadwal', 'Terlambat'])
-                ->orderBy('tanggal_cek', 'asc')
-                ->take(6)
-                ->get();
+                ->orderBy('tanggal_cek', 'asc');
+
+            if ($selectedFrekuensi !== 'semua') {
+                $applyFreqFilter($upcomingQ, $selectedFrekuensi);
+            }
+
+            $myUpcomingSchedules = $upcomingQ->take(6)->get();
         }
 
         return view('maintenance.index', compact(
@@ -368,6 +425,13 @@ class MaintenanceController extends Controller
             'tab',
             'totalSemuaTim',
             'totalPMSaya',
+            'selectedFrekuensi',
+            'countFreqSemua',
+            'countFreqSekali',
+            'countFreqMingguan',
+            'countFreqBulanan',
+            'countFreqTahunan',
+            'countFreqTim',
             'myUpcomingSchedules',
             'countTerjadwal',
             'countSelesai',

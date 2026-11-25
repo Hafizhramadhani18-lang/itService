@@ -79,25 +79,51 @@
         </div>
     </div>
 
-    @if(!Auth::user()->isAdmin())
-    <!-- Tab Selector Khusus Teknisi: Saya vs Semua tim -->
-    <div class="flex items-center space-x-2">
-        <a href="{{ route('maintenance.index', array_merge(request()->except('tab'), ['tab' => 'my'])) }}" 
-           class="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition {{ $tab === 'my' ? 'bg-[#0e1a2b] text-white shadow-2xs' : 'bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50' }}"
-           title="Pemeliharaan Saya">
-            <span>Saya</span>
-            <span class="sr-only">Pemeliharaan Saya</span>
-            <span class="text-[11px] font-semibold opacity-85">&bull; {{ $totalPMSaya }}</span>
-        </a>
-        <a href="{{ route('maintenance.index', array_merge(request()->except('tab'), ['tab' => 'all'])) }}" 
-           class="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition {{ $tab === 'all' ? 'bg-[#0e1a2b] text-white shadow-2xs' : 'bg-white border border-slate-200/80 text-slate-600 hover:bg-slate-50' }}"
-           title="Semua Tim IT">
-            <span>Semua tim</span>
-            <span class="sr-only">Semua Tim IT</span>
-            <span class="text-[11px] font-semibold opacity-85">&bull; {{ $totalSemuaTim }}</span>
-        </a>
+    <!-- Filter Cepat Frekuensi PM & Penugasan Tim (Pengganti Tab Saya vs Tim) -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            @php
+                $freqPills = [
+                    ['id' => 'semua', 'label' => 'Semua PM', 'count' => $countFreqSemua ?? 0, 'icon' => 'fa-solid fa-layer-group'],
+                    ['id' => 'sekali', 'label' => 'Sekali', 'count' => $countFreqSekali ?? 0, 'icon' => 'fa-solid fa-bolt'],
+                    ['id' => 'mingguan', 'label' => 'Mingguan', 'count' => $countFreqMingguan ?? 0, 'icon' => 'fa-regular fa-calendar-check'],
+                    ['id' => 'bulanan', 'label' => 'Bulanan', 'count' => $countFreqBulanan ?? 0, 'icon' => 'fa-solid fa-calendar-days'],
+                    ['id' => 'tahunan', 'label' => 'Tahunan', 'count' => $countFreqTahunan ?? 0, 'icon' => 'fa-solid fa-calendar'],
+                    ['id' => 'tim', 'label' => 'Tugas Tim', 'count' => $countFreqTim ?? 0, 'icon' => 'fa-solid fa-users'],
+                ];
+            @endphp
+
+            @foreach($freqPills as $p)
+                @php $isActive = ($selectedFrekuensi ?? 'semua') === $p['id']; @endphp
+                <a href="{{ route('maintenance.index', array_merge(request()->except(['frekuensi', 'page']), ['frekuensi' => $p['id']])) }}" 
+                   class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition shadow-2xs {{ $isActive ? 'bg-[#0e1a2b] text-white shadow-xs ring-1 ring-slate-900/10' : 'bg-white border border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900' }}">
+                    <i class="{{ $p['icon'] }} text-[11px] {{ $isActive ? 'text-teal-400' : 'text-slate-400' }}"></i>
+                    <span>{{ $p['label'] }}</span>
+                    <span class="text-[10px] px-1.5 py-0.2 rounded-full font-extrabold {{ $isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500' }}">
+                        {{ $p['count'] }}
+                    </span>
+                </a>
+            @endforeach
+        </div>
+
+        @if(Auth::user()->isTeknisi())
+        <!-- Lingkup Kerja Teknisi: Mode Fokus Saya vs Pantau Semua Tim -->
+        <div class="inline-flex items-center p-0.5 rounded-full bg-slate-100 border border-slate-200/70 text-xs font-semibold">
+            <a href="{{ route('maintenance.index', array_merge(request()->except('tab'), ['tab' => 'my'])) }}"
+               class="px-3 py-1 rounded-full transition {{ $tab === 'my' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800' }}"
+               title="Tampilkan tugas mandiri & porsi penugasan Anda">
+                <span>Tugas Saya</span>
+                <span class="text-[10px] text-slate-400 ml-1">({{ $totalPMSaya }})</span>
+            </a>
+            <a href="{{ route('maintenance.index', array_merge(request()->except('tab'), ['tab' => 'all'])) }}"
+               class="px-3 py-1 rounded-full transition {{ $tab === 'all' ? 'bg-white text-slate-900 font-bold shadow-2xs' : 'text-slate-500 hover:text-slate-800' }}"
+               title="Tampilkan seluruh jadwal tim IT lapangan">
+                <span>Semua Tim</span>
+                <span class="text-[10px] text-slate-400 ml-1">({{ $totalSemuaTim }})</span>
+            </a>
+        </div>
+        @endif
     </div>
-    @endif
 
     @if(Auth::user()->isTeknisi() && isset($myUpcomingSchedules))
     <!-- SEKSI AGENDA & JADWAL PM TEKNISI (PORSI PENUGASAN DARI ADMIN) -->
@@ -141,21 +167,27 @@
                 @endphp
                 <div class="p-4 rounded-xl border transition flex flex-col justify-between group {{ $isLate ? 'bg-rose-50/40 border-rose-200/80 hover:border-rose-300' : ($isToday ? 'bg-teal-50/30 border-teal-200/90 hover:border-teal-400' : 'bg-slate-50/50 border-slate-200/70 hover:border-slate-300') }}">
                     <div class="space-y-2.5">
-                        <!-- Header Kartu: Status Jadwal & Waktu -->
+                        <!-- Header Kartu: Status Jadwal, Frekuensi & Waktu -->
                         <div class="flex items-center justify-between gap-2">
-                            @if($isLate)
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200 inline-flex items-center">
-                                    <i class="fa-regular fa-clock text-[9px] mr-1"></i> Terlambat
+                            <div class="flex items-center space-x-1.5 flex-wrap gap-y-1">
+                                @if($isLate)
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200 inline-flex items-center">
+                                        <i class="fa-regular fa-clock text-[9px] mr-1"></i> Terlambat
+                                    </span>
+                                @elseif($isToday)
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center">
+                                        <i class="fa-solid fa-calendar-day text-[9px] mr-1"></i> Hari Ini
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white text-slate-600 border border-slate-200 inline-flex items-center shadow-2xs">
+                                        <i class="fa-regular fa-calendar text-[9px] mr-1 text-slate-400"></i> Mendatang
+                                    </span>
+                                @endif
+
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200/80">
+                                    {{ $sched->frekuensi_label }}
                                 </span>
-                            @elseif($isToday)
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 inline-flex items-center">
-                                    <i class="fa-solid fa-calendar-day text-[9px] mr-1"></i> Hari Ini
-                                </span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white text-slate-600 border border-slate-200 inline-flex items-center shadow-2xs">
-                                    <i class="fa-regular fa-calendar text-[9px] mr-1 text-slate-400"></i> Mendatang
-                                </span>
-                            @endif
+                            </div>
 
                             <span class="text-[11px] font-mono font-bold text-slate-600">
                                 {{ $dateText }} &bull; {{ $jamText }}
@@ -175,6 +207,18 @@
                                     <span class="font-mono text-slate-500">{{ $sched->kode_perangkat }}</span>
                                 @endif
                             </div>
+
+                            @if($sched->user_id)
+                                <div class="inline-flex items-center space-x-1 text-[10px] text-teal-800 font-semibold bg-teal-50/70 border border-teal-200/50 px-2 py-0.5 rounded-md mt-1.5">
+                                    <i class="fa-solid fa-user-check text-[9px] text-teal-600"></i>
+                                    <span>PIC: {{ $sched->teknisi_nama }}</span>
+                                </div>
+                            @else
+                                <div class="inline-flex items-center space-x-1 text-[10px] text-amber-800 font-bold bg-amber-50/80 border border-amber-200/60 px-2 py-0.5 rounded-md mt-1.5">
+                                    <i class="fa-solid fa-users text-[9px] text-amber-600"></i>
+                                    <span>Tugas Bersama Tim IT</span>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Kegiatan & Checklist Count -->
