@@ -88,6 +88,9 @@
         body.route-knowledge #ai-chatbox-container {
             display: none !important;
         }
+        /* Utilitas No Scrollbar untuk Tab Horizontal */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
     @stack('styles')
 </head>
