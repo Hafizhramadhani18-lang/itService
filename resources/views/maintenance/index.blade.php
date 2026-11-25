@@ -910,6 +910,7 @@
                     <label class="block font-bold text-slate-700 mb-1.5">Frekuensi</label>
                     <select id="edit-sch-frekuensi" name="frekuensi"
                             class="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 font-semibold text-slate-800 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 shadow-2xs">
+                        <option value="Sekali">Sekali</option>
                         <option value="Setiap minggu">Setiap minggu</option>
                         <option value="Setiap bulan">Setiap bulan</option>
                         <option value="Setiap 2 bulan">Setiap 2 bulan</option>

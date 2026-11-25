@@ -182,7 +182,7 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 mb-2">Frekuensi</label>
                             <div class="flex flex-wrap items-center gap-2" id="frekuensi_pills">
-                                @foreach(['Sekali', 'Mingguan', 'Bulanan', 'Tiga bulanan', 'Atur sendiri'] as $freq)
+                                @foreach(['Sekali', 'Mingguan', 'Bulanan', 'Tiga bulanan', 'Tahunan', 'Atur sendiri'] as $freq)
                                     @php $isDef = $freq === old('frekuensi', $prefillFrekuensi); @endphp
                                     <button type="button"
                                             onclick="setFrekuensi('{{ $freq }}')"
@@ -204,6 +204,7 @@
                                     <option value="hari">Hari</option>
                                     <option value="minggu">Minggu</option>
                                     <option value="bulan" selected>Bulan</option>
+                                    <option value="tahun">Tahun</option>
                                 </select>
                             </div>
                         </div>
@@ -606,6 +607,8 @@
             d.setMonth(d.getMonth() + stepIndex);
         } else if (freq === 'Tiga bulanan') {
             d.setMonth(d.getMonth() + (3 * stepIndex));
+        } else if (freq === 'Tahunan') {
+            d.setFullYear(d.getFullYear() + stepIndex);
         } else if (freq === 'Atur sendiri') {
             const interval = Math.max(1, parseInt(document.getElementById('input_custom_interval')?.value || '1', 10));
             const unit = document.getElementById('select_custom_unit')?.value || 'bulan';
@@ -613,6 +616,8 @@
                 d.setDate(d.getDate() + (interval * stepIndex));
             } else if (unit === 'minggu') {
                 d.setDate(d.getDate() + (interval * 7 * stepIndex));
+            } else if (unit === 'tahun') {
+                d.setFullYear(d.getFullYear() + (interval * stepIndex));
             } else {
                 d.setMonth(d.getMonth() + (interval * stepIndex));
             }
@@ -634,6 +639,7 @@
         else if (freq === 'Mingguan') freqLabel = 'Setiap minggu';
         else if (freq === 'Bulanan') freqLabel = 'Setiap bulan';
         else if (freq === 'Tiga bulanan') freqLabel = 'Setiap 3 bulan';
+        else if (freq === 'Tahunan') freqLabel = 'Setiap tahun';
         else if (freq === 'Atur sendiri') {
             const interval = Math.max(1, parseInt(document.getElementById('input_custom_interval')?.value || '1', 10));
             const unit = document.getElementById('select_custom_unit')?.value || 'bulan';

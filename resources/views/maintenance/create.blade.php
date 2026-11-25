@@ -99,6 +99,7 @@
                                         data-tim="{{ $task->tim_label }}"
                                         data-kegiatan="{{ $task->display_kegiatan }}"
                                         data-jenis="{{ $task->jenis_perangkat }}"
+                                        data-frekuensi="{{ $task->frekuensi_label }}"
                                         data-jam="{{ $task->jam_mulai ? substr(str_replace('.', ':', $task->jam_mulai), 0, 5) : '' }}"
                                         data-is-late="{{ $task->isTerlambat() ? '1' : '0' }}"
                                         data-checklist='@json($taskChecklist)'
@@ -363,7 +364,7 @@
                                     {{ date('d/m/Y', strtotime('+1 month')) }}
                                 </span>
                             </div>
-                            <p class="text-[10px] text-slate-400 mt-1 leading-snug">
+                            <p class="text-[10px] text-slate-400 mt-1 leading-snug" id="summary-jadwal-note">
                                 Dihitung otomatis dari jadwal rutin.
                             </p>
                         </div>
@@ -422,10 +423,13 @@
         }
     }
 
+    let currentScheduleFreq = '{{ $selectedSchedule?->frekuensi_label ?? "Setiap bulan" }}';
+
     function onScheduleChanged(sel) {
         const opt = sel.options[sel.selectedIndex];
         if (!opt || !opt.value) return;
 
+        currentScheduleFreq = opt.getAttribute('data-frekuensi') || 'Setiap bulan';
         const nama = opt.getAttribute('data-nama') || '';
         const kode = opt.getAttribute('data-kode') || '';
         const lokasi = opt.getAttribute('data-lokasi') || '';
@@ -559,11 +563,48 @@
         const parts = dateVal.split('-').map(Number);
         if (parts.length !== 3) return;
         const d = new Date(parts[0], parts[1] - 1, parts[2]);
-        d.setMonth(d.getMonth() + 1);
+        const freqLower = (currentScheduleFreq || '').toLowerCase();
+
+        const elNext = document.getElementById('summary-jadwal-berikutnya');
+        const elNote = document.getElementById('summary-jadwal-note');
+
+        if (freqLower === 'sekali' || freqLower.includes('sekali')) {
+            if (elNext) elNext.innerText = 'Tidak berulang';
+            if (elNote) elNote.innerText = 'Pemeliharaan satu kali selesai, tidak ada siklus berikutnya.';
+            return;
+        }
+
+        let noteText = 'Dihitung otomatis dari jadwal rutin.';
+        if (freqLower.includes('hari')) {
+            const m = freqLower.match(/(\d+)\s*hari/);
+            const days = m ? parseInt(m[1], 10) : 1;
+            d.setDate(d.getDate() + days);
+            noteText = `Siklus setiap ${days} hari.`;
+        } else if (freqLower.includes('minggu')) {
+            const m = freqLower.match(/(\d+)\s*minggu/);
+            const weeks = m ? parseInt(m[1], 10) : 1;
+            d.setDate(d.getDate() + (weeks * 7));
+            noteText = weeks > 1 ? `Siklus setiap ${weeks} minggu (+${weeks * 7} hari).` : 'Siklus mingguan (+7 hari).';
+        } else if (freqLower.includes('tahun')) {
+            const m = freqLower.match(/(\d+)\s*tahun/);
+            const years = m ? parseInt(m[1], 10) : 1;
+            d.setFullYear(d.getFullYear() + years);
+            noteText = years > 1 ? `Siklus setiap ${years} tahun.` : 'Siklus tahunan (+1 tahun).';
+        } else if (freqLower.includes('3 bulan') || freqLower.includes('tiga bulan')) {
+            d.setMonth(d.getMonth() + 3);
+            noteText = 'Siklus triwulan (+3 bulan).';
+        } else {
+            const m = freqLower.match(/(\d+)\s*bulan/);
+            const months = m ? parseInt(m[1], 10) : 1;
+            d.setMonth(d.getMonth() + months);
+            noteText = months > 1 ? `Siklus setiap ${months} bulan.` : 'Siklus bulanan (+1 bulan).';
+        }
+
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
-        document.getElementById('summary-jadwal-berikutnya').innerText = `${day}/${month}/${year}`;
+        if (elNext) elNext.innerText = `${day}/${month}/${year}`;
+        if (elNote) elNote.innerText = noteText;
     }
 
     function previewUpload(input, labelId) {

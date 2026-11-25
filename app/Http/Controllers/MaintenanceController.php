@@ -658,6 +658,7 @@ class MaintenanceController extends Controller
                 'Mingguan' => 'Setiap minggu',
                 'Bulanan' => 'Setiap bulan',
                 'Tiga bulanan' => 'Setiap 3 bulan',
+                'Tahunan' => 'Setiap tahun',
                 'Atur sendiri' => "Setiap {$customInterval} {$customUnit}",
                 default => $frekuensiInput,
             };
@@ -666,9 +667,13 @@ class MaintenanceController extends Controller
                 'Mingguan' => $date->copy()->addWeek(),
                 'Bulanan' => $date->copy()->addMonth(),
                 'Tiga bulanan' => $date->copy()->addMonths(3),
-                'Atur sendiri' => $customUnit === 'hari'
-                    ? $date->copy()->addDays($customInterval)
-                    : ($customUnit === 'minggu' ? $date->copy()->addWeeks($customInterval) : $date->copy()->addMonths($customInterval)),
+                'Tahunan' => $date->copy()->addYear(),
+                'Atur sendiri' => match ($customUnit) {
+                    'hari' => $date->copy()->addDays($customInterval),
+                    'minggu' => $date->copy()->addWeeks($customInterval),
+                    'tahun' => $date->copy()->addYears($customInterval),
+                    default => $date->copy()->addMonths($customInterval),
+                },
                 default => $date->copy()->addMonth(),
             };
 
@@ -1064,6 +1069,7 @@ class MaintenanceController extends Controller
             'Mingguan' => 'Setiap minggu',
             'Bulanan' => 'Setiap bulan',
             'Tiga bulanan' => 'Setiap 3 bulan',
+            'Tahunan' => 'Setiap tahun',
             'Atur sendiri' => "Setiap {$customInterval} {$customUnit}",
             default => $rawFreq,
         };
@@ -1174,6 +1180,7 @@ class MaintenanceController extends Controller
             'Mingguan' => 'Setiap minggu',
             'Bulanan' => 'Setiap bulan',
             'Tiga bulanan' => 'Setiap 3 bulan',
+            'Tahunan' => 'Setiap tahun',
             'Atur sendiri' => "Setiap {$customInterval} {$customUnit}",
             default => $rawFreq,
         };
@@ -1568,34 +1575,52 @@ class MaintenanceController extends Controller
             ]);
         }
 
-        // Sinkronkan tanggal_berikutnya pada Master Jadwal Rutin jika log diselesaikan
+        // Sinkronkan tanggal_berikutnya pada Master Jadwal Rutin & jadwalkan siklus berikutnya jika log diselesaikan
+        $nextLogCreated = null;
         if ($finalStatus === 'Selesai') {
             $masterSch = $savedLog->jadwal_id
                 ? MaintenanceSchedule::find($savedLog->jadwal_id)
                 : MaintenanceSchedule::where('is_active', true)->where('nama_aset', $savedLog->nama_perangkat)->first();
 
             if ($masterSch) {
-                $freq = strtolower((string) $masterSch->frekuensi);
-                $nextDue = $tanggalCek->copy();
-                if (preg_match('/(\d+)\s*hari/', $freq, $m)) {
-                    $nextDue->addDays((int) $m[1]);
-                } elseif (str_contains($freq, 'minggu')) {
-                    $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
-                    $nextDue->addWeeks($num);
-                } elseif (str_contains($freq, 'tahun')) {
-                    $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
-                    $nextDue->addYears($num);
-                } else {
-                    $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
-                    $nextDue->addMonths($num);
+                if (!$savedLog->jadwal_id) {
+                    $savedLog->update(['jadwal_id' => $masterSch->id]);
                 }
-                if (!$masterSch->tanggal_berikutnya || $masterSch->tanggal_berikutnya->lte($tanggalCek)) {
+
+                $freq = strtolower(trim((string) $masterSch->frekuensi));
+                if ($freq === 'sekali' || str_contains($freq, 'sekali')) {
+                    // Pemeliharaan 1 kali pengerjaan: nonaktifkan jadwal master rutin, tidak ada siklus berikutnya
+                    $masterSch->update(['is_active' => false]);
+                } else {
+                    $nextDue = $tanggalCek->copy();
+                    if (preg_match('/(\d+)\s*hari/', $freq, $m)) {
+                        $nextDue->addDays((int) $m[1]);
+                    } elseif (str_contains($freq, 'minggu')) {
+                        $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
+                        $nextDue->addWeeks($num);
+                    } elseif (str_contains($freq, 'tahun')) {
+                        $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
+                        $nextDue->addYears($num);
+                    } elseif (str_contains($freq, '3 bulan') || str_contains($freq, 'tiga bulan')) {
+                        $nextDue->addMonths(3);
+                    } else {
+                        $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
+                        $nextDue->addMonths($num);
+                    }
+
                     $masterSch->update(['tanggal_berikutnya' => $nextDue->toDateString()]);
+
+                    // Otomatis buat tugas Terjadwal untuk siklus berikutnya
+                    $nextLogCreated = self::createNextRecurrenceLog($masterSch, $savedLog, $nextDue);
                 }
             }
         }
 
         $message = "Log pemeliharaan {$logNumber} berhasil dicatat!";
+        if ($nextLogCreated) {
+            $formattedNext = Carbon::parse($nextLogCreated->tanggal_cek)->translatedFormat('d F Y');
+            $message .= " Jadwal pemeliharaan berikutnya ({$masterSch->frekuensi}) otomatis dibuat untuk {$formattedNext}.";
+        }
         if ($createdService) {
             $message .= " Tiket perbaikan {$createdService->ticket_number} telah dibuat otomatis.";
         }
@@ -2078,6 +2103,72 @@ class MaintenanceController extends Controller
     }
 
     /**
+     * Otomatis membuat log pemeliharaan Terjadwal untuk siklus berulang berikutnya (mingguan, bulanan, tahunan).
+     */
+    public static function createNextRecurrenceLog(MaintenanceSchedule $masterSch, MaintenanceLog $completedLog, Carbon $nextDue): ?MaintenanceLog
+    {
+        // Cegah duplikasi tugas untuk tanggal & aset yang sama
+        $alreadyExists = MaintenanceLog::where(function ($q) use ($masterSch) {
+                $q->where('jadwal_id', $masterSch->id)
+                  ->orWhere(function ($match) use ($masterSch) {
+                      $match->where('nama_perangkat', $masterSch->nama_aset)
+                            ->where('lokasi_ruangan', $masterSch->lokasi_ruangan);
+                  });
+            })
+            ->whereDate('tanggal_cek', $nextDue->toDateString())
+            ->whereIn('status', ['Terjadwal', 'Terlambat'])
+            ->exists();
+
+        if ($alreadyExists) {
+            return null;
+        }
+
+        // Siapkan checklist baru yang belum dicentang (unchecked)
+        $freshChecklist = [];
+        $sourceChecklist = !empty($masterSch->checklist) ? $masterSch->checklist : $completedLog->checklist;
+        if (is_array($sourceChecklist)) {
+            foreach ($sourceChecklist as $item) {
+                $lbl = is_array($item) ? ($item['item'] ?? '') : (string) $item;
+                if (trim($lbl) !== '') {
+                    $freshChecklist[] = ['item' => trim($lbl), 'checked' => false];
+                }
+            }
+        }
+
+        $techUser = $masterSch->teknisi_id
+            ? User::find($masterSch->teknisi_id)
+            : ($completedLog->user_id ? User::find($completedLog->user_id) : null);
+        $techNama = $techUser ? $techUser->name : ($masterSch->teknisi_nama ?: ($completedLog->teknisi_nama ?: 'Belum ada'));
+
+        $kodePerangkat = $masterSch->kode_perangkat
+            ?: ($completedLog->kode_perangkat ?: Asset::generateKode($masterSch->nama_aset, $masterSch->lokasi_ruangan, 'Server / UPS'));
+
+        return MaintenanceLog::create([
+            'log_number' => MaintenanceLog::generateLogNumber($nextDue),
+            'tanggal_cek' => $nextDue->toDateString(),
+            'jam_mulai' => $masterSch->jam_mulai ?: ($completedLog->jam_mulai ?: '08:00'),
+            'periode_bulan' => $nextDue->format('Y-m'),
+            'nama_perangkat' => $masterSch->nama_aset,
+            'lokasi_ruangan' => $masterSch->lokasi_ruangan,
+            'kode_perangkat' => $kodePerangkat,
+            'jenis_perangkat' => $completedLog->jenis_perangkat ?: 'Server / UPS',
+            'divisi' => $completedLog->divisi ?: 'Operasional PLTU',
+            'user_id' => $techUser?->id,
+            'teknisi_nama' => $techNama,
+            'tim' => $masterSch->tim ?: ($completedLog->tim ?: 'Tim IT Lapangan'),
+            'kegiatan' => $masterSch->kegiatan ?: $completedLog->kegiatan,
+            'jenis_pemeliharaan' => 'Rutin',
+            'checklist' => !empty($freshChecklist) ? $freshChecklist : null,
+            'status' => 'Terjadwal',
+            'kondisi' => 'Prima',
+            'tindakan' => "Dijadwalkan otomatis siklus berikutnya ({$masterSch->frekuensi}) dari Master Jadwal Rutin",
+            'catatan_rekomendasi' => $masterSch->catatan_teknisi ?: $completedLog->catatan_rekomendasi,
+            'status_tindak_lanjut' => 'Selesai',
+            'jadwal_id' => $masterSch->id,
+        ]);
+    }
+
+    /**
      * Otomatisasi sinkronisasi Master Jadwal Rutin ke Log Pemeliharaan.
      * Membuat tugas Terjadwal untuk teknisi sehingga teknisi tidak perlu input manual dari nol.
      */
@@ -2088,6 +2179,22 @@ class MaintenanceController extends Controller
         $today = now()->startOfDay();
 
         foreach ($activeSchedules as $schedule) {
+            $freq = strtolower(trim((string) $schedule->frekuensi));
+
+            // Jika jadwal sekali dan sudah pernah selesai, nonaktifkan
+            if ($freq === 'sekali' || str_contains($freq, 'sekali')) {
+                $alreadyDone = MaintenanceLog::where(function ($q) use ($schedule) {
+                        $q->where('jadwal_id', $schedule->id)
+                          ->orWhere('nama_perangkat', $schedule->nama_aset);
+                    })
+                    ->where('status', 'Selesai')
+                    ->exists();
+                if ($alreadyDone) {
+                    $schedule->update(['is_active' => false]);
+                    continue;
+                }
+            }
+
             $due = $schedule->tanggal_berikutnya
                 ? Carbon::parse($schedule->tanggal_berikutnya)->startOfDay()
                 : $today;
@@ -2111,57 +2218,88 @@ class MaintenanceController extends Controller
                 continue;
             }
 
-            // Jika jadwal sudah jatuh tempo atau akan tiba dalam 7 hari ke depan
-            if ($due->lte(now()->addDays(7)->endOfDay())) {
-                // Pastikan belum ada log selesai pada tanggal yang sama (mencegah duplikasi siklus yang sama)
-                $alreadyFinished = MaintenanceLog::where(function ($q) use ($schedule) {
-                        $q->where('jadwal_id', $schedule->id)
-                          ->orWhere('nama_perangkat', $schedule->nama_aset);
-                    })
-                    ->whereDate('tanggal_cek', $due->toDateString())
-                    ->where('status', 'Selesai')
-                    ->exists();
+            // Jika tanggal jatuh tempo ini ternyata SUDAH selesai dikerjakan, majukan ke siklus berikutnya
+            $alreadyFinished = MaintenanceLog::where(function ($q) use ($schedule) {
+                    $q->where('jadwal_id', $schedule->id)
+                      ->orWhere('nama_perangkat', $schedule->nama_aset);
+                })
+                ->whereDate('tanggal_cek', $due->toDateString())
+                ->where('status', 'Selesai')
+                ->first();
 
-                if (!$alreadyFinished) {
-                    $isPast = $due->lt($today);
-                    $status = $isPast ? 'Terlambat' : 'Terjadwal';
-                    $tech = $schedule->teknisi_id ? User::find($schedule->teknisi_id) : null;
-                    $techNama = $tech ? $tech->name : ($schedule->teknisi_nama ?: 'Belum ada');
+            if ($alreadyFinished) {
+                if ($freq === 'sekali' || str_contains($freq, 'sekali')) {
+                    $schedule->update(['is_active' => false]);
+                    continue;
+                }
 
-                    // Cari kode perangkat dari master asset jika belum ada
-                    $kodePerangkat = $schedule->kode_perangkat;
-                    if (empty($kodePerangkat)) {
-                        $matchedAsset = Asset::where('nama_aset', $schedule->nama_aset)->first();
-                        $kodePerangkat = $matchedAsset ? $matchedAsset->kode_aset : ('AST-' . strtoupper(Str::random(5)));
+                $nextDue = $due->copy();
+                if (preg_match('/(\d+)\s*hari/', $freq, $m)) {
+                    $nextDue->addDays((int) $m[1]);
+                } elseif (str_contains($freq, 'minggu')) {
+                    $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
+                    $nextDue->addWeeks($num);
+                } elseif (str_contains($freq, 'tahun')) {
+                    $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
+                    $nextDue->addYears($num);
+                } elseif (str_contains($freq, '3 bulan') || str_contains($freq, 'tiga bulan')) {
+                    $nextDue->addMonths(3);
+                } else {
+                    $num = preg_match('/(\d+)/', $freq, $m) ? (int) $m[1] : 1;
+                    $nextDue->addMonths($num);
+                }
+
+                $schedule->update(['tanggal_berikutnya' => $nextDue->toDateString()]);
+                $due = $nextDue;
+            }
+
+            // Buat log Terjadwal untuk siklus saat ini / berikutnya
+            $isPast = $due->lt($today);
+            $status = $isPast ? 'Terlambat' : 'Terjadwal';
+            $tech = $schedule->teknisi_id ? User::find($schedule->teknisi_id) : null;
+            $techNama = $tech ? $tech->name : ($schedule->teknisi_nama ?: 'Belum ada');
+
+            $kodePerangkat = $schedule->kode_perangkat;
+            if (empty($kodePerangkat)) {
+                $matchedAsset = Asset::where('nama_aset', $schedule->nama_aset)->first();
+                $kodePerangkat = $matchedAsset ? $matchedAsset->kode_aset : ('AST-' . strtoupper(Str::random(5)));
+            }
+
+            $freshChecklist = [];
+            if (!empty($schedule->checklist) && is_array($schedule->checklist)) {
+                foreach ($schedule->checklist as $item) {
+                    $lbl = is_array($item) ? ($item['item'] ?? '') : (string) $item;
+                    if (trim($lbl) !== '') {
+                        $freshChecklist[] = ['item' => trim($lbl), 'checked' => false];
                     }
-
-                    MaintenanceLog::create([
-                        'log_number' => MaintenanceLog::generateLogNumber($due),
-                        'tanggal_cek' => $due->toDateString(),
-                        'jam_mulai' => $schedule->jam_mulai ?: '08:00',
-                        'periode_bulan' => $due->format('Y-m'),
-                        'nama_perangkat' => $schedule->nama_aset,
-                        'lokasi_ruangan' => $schedule->lokasi_ruangan,
-                        'kode_perangkat' => $kodePerangkat,
-                        'jenis_perangkat' => 'Server / UPS',
-                        'divisi' => 'Operasional PLTU',
-                        'user_id' => $tech?->id,
-                        'teknisi_nama' => $techNama,
-                        'tim' => $schedule->tim ?: 'Tim IT Lapangan',
-                        'kegiatan' => $schedule->kegiatan ?: 'Pemeriksaan Rutin Berkala',
-                        'jenis_pemeliharaan' => 'Rutin',
-                        'checklist' => $schedule->checklist,
-                        'status' => $status,
-                        'kondisi' => 'Prima',
-                        'tindakan' => "Dijadwalkan otomatis ({$schedule->frekuensi}) dari Master Jadwal Rutin",
-                        'catatan_rekomendasi' => $schedule->catatan_teknisi,
-                        'status_tindak_lanjut' => 'Selesai',
-                        'jadwal_id' => $schedule->id,
-                    ]);
-
-                    $createdCount++;
                 }
             }
+
+            MaintenanceLog::create([
+                'log_number' => MaintenanceLog::generateLogNumber($due),
+                'tanggal_cek' => $due->toDateString(),
+                'jam_mulai' => $schedule->jam_mulai ?: '08:00',
+                'periode_bulan' => $due->format('Y-m'),
+                'nama_perangkat' => $schedule->nama_aset,
+                'lokasi_ruangan' => $schedule->lokasi_ruangan,
+                'kode_perangkat' => $kodePerangkat,
+                'jenis_perangkat' => 'Server / UPS',
+                'divisi' => 'Operasional PLTU',
+                'user_id' => $tech?->id,
+                'teknisi_nama' => $techNama,
+                'tim' => $schedule->tim ?: 'Tim IT Lapangan',
+                'kegiatan' => $schedule->kegiatan ?: 'Pemeriksaan Rutin Berkala',
+                'jenis_pemeliharaan' => 'Rutin',
+                'checklist' => !empty($freshChecklist) ? $freshChecklist : null,
+                'status' => $status,
+                'kondisi' => 'Prima',
+                'tindakan' => "Dijadwalkan otomatis ({$schedule->frekuensi}) dari Master Jadwal Rutin",
+                'catatan_rekomendasi' => $schedule->catatan_teknisi,
+                'status_tindak_lanjut' => 'Selesai',
+                'jadwal_id' => $schedule->id,
+            ]);
+
+            $createdCount++;
         }
 
         return $createdCount;

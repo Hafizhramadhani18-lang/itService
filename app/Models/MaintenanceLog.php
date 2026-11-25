@@ -65,6 +65,23 @@ class MaintenanceLog extends Model
         return $this->belongsTo(Service::class, 'service_id');
     }
 
+    public function jadwal()
+    {
+        return $this->belongsTo(MaintenanceSchedule::class, 'jadwal_id');
+    }
+
+    public function getFrekuensiLabelAttribute(): string
+    {
+        if ($this->jadwal && !empty($this->jadwal->frekuensi)) {
+            return $this->jadwal->frekuensi;
+        }
+        $match = MaintenanceSchedule::where('nama_aset', $this->nama_perangkat)->first();
+        if ($match && !empty($match->frekuensi)) {
+            return $match->frekuensi;
+        }
+        return 'Setiap bulan';
+    }
+
     /**
      * Helpers for Schedule & Execution Status (Mockup Referensi Admin)
      */
