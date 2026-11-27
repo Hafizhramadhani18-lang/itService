@@ -13,13 +13,13 @@
                 <span>Ruang Kerja Asisten AI IT Support PT S2P PLTU Karangkandri</span>
             </div>
             <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <span>{{ Auth::user()->isPegawai() ? 'Asisten Virtual AI (Gemini)' : 'Asisten AI & Katalog SOP IT' }}</span>
+                <span>{{ Auth::user()->isPegawai() ? 'AI Support' : 'AI Support & Katalog SOP IT' }}</span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Online 24/7</span>
             </h1>
             <p class="text-xs text-slate-500 mt-0.5 font-medium">
                 {{ Auth::user()->isPegawai() 
-                    ? 'Tanyakan apa saja kepada Asisten AI Gemini—mulai dari keseharian, hobi, pekerjaan, projek, hingga kendala IT kantor.' 
-                    : 'Pusat interaksi Asisten AI (Gemini) & katalog standar operasional prosedur penanganan gangguan IT PT S2P PLTU Karangkandri.' }}
+                    ? 'Tanyakan apa saja kepada AI Support—mulai dari keseharian, hobi, pekerjaan, projek, hingga kendala IT kantor.' 
+                    : 'Pusat interaksi AI Support & katalog standar operasional prosedur penanganan gangguan IT PT S2P PLTU Karangkandri.' }}
             </p>
         </div>
 
@@ -57,7 +57,7 @@
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h2 class="font-extrabold text-xs sm:text-sm text-white">Asisten Virtual AI (Gemini)</h2>
+                            <h2 class="font-extrabold text-xs sm:text-sm text-white">AI Support</h2>
                             <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Cerdas &amp; Aktif</span>
                         </div>
                         <p class="text-[10px] text-slate-300">Siap menjawab pertanyaan keseharian, hobi, pekerjaan, projek, &amp; kendala IT</p>
@@ -97,7 +97,7 @@
                                     <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex-shrink-0">Online 24/7</span>
                                 </div>
                                 <p class="text-xs text-slate-300 leading-relaxed">
-                                    Saya <strong>Asisten AI (Google Gemini) PT S2P</strong>. Anda bebas bertanya <strong>apa saja</strong>—mulai dari obrolan keseharian, hobi, ide projek, pekerjaan, rumus Excel, hingga kendala IT kantor:
+                                    Saya <strong>AI Support PT S2P</strong>. Anda bebas bertanya <strong>apa saja</strong>—mulai dari obrolan keseharian, hobi, ide projek, pekerjaan, rumus Excel, hingga kendala IT kantor:
                                 </p>
                             </div>
                         </div>
@@ -860,7 +860,7 @@
                 <div class="flex items-center justify-between text-[10px] text-slate-400">
                     <span class="font-bold text-teal-800 flex items-center space-x-1">
                         <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                        <span>${data.sop_title || (data.source === 'gemini_ai' ? 'Gemini AI' : 'Asisten AI')}</span>
+                        <span>${data.sop_title || 'AI Support'}</span>
                     </span>
                     <span>Baru saja</span>
                 </div>

@@ -87,7 +87,7 @@
         <div class="bg-slate-50 border-b border-slate-100 px-3.5 py-1.5 flex items-center justify-between text-[10.5px] text-slate-600 flex-shrink-0">
             <div class="flex items-center space-x-1.5 truncate">
                 <i class="fa-solid fa-wand-magic-sparkles text-teal-600 text-[11px] flex-shrink-0"></i>
-                <span class="truncate font-medium text-slate-700">Didukung Gemini AI &amp; SOP IT PLTU</span>
+                <span class="truncate font-medium text-slate-700">Didukung AI Support &amp; SOP IT PLTU</span>
             </div>
             <a href="{{ route('knowledge.base') }}" class="font-bold text-teal-700 hover:text-teal-900 underline flex-shrink-0 ml-2">Layar Penuh &rarr;</a>
         </div>
@@ -104,7 +104,7 @@
                     <div class="bg-white p-3 rounded-xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 leading-relaxed space-y-1">
                         <p class="font-bold text-slate-900 text-xs">Halo {{ Auth::user()->name ?? 'Bapak/Ibu' }}! 👋</p>
                         <p class="text-slate-600 text-[11px]">
-                            Saya <strong>Asisten Virtual AI (Gemini) PT S2P</strong>. Anda dapat bertanya <strong>apa saja</strong>—mulai dari keseharian, hobi, pekerjaan, projek, hingga kendala IT kantor—atau pilih topik cepat di bawah:
+                            Saya <strong>AI Support PT S2P</strong>. Anda dapat bertanya <strong>apa saja</strong>—mulai dari keseharian, hobi, pekerjaan, projek, hingga kendala IT kantor—atau pilih topik cepat di bawah:
                         </p>
                     </div>
 
@@ -454,7 +454,7 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
         // Badges
         let badgeHtml = '';
         if (data.source === 'gemini_ai') {
-            badgeHtml += `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center space-x-1"><i class="fa-solid fa-wand-magic-sparkles text-[8px] text-amber-500"></i><span>Gemini AI</span></span>`;
+            badgeHtml += `<span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center space-x-1"><i class="fa-solid fa-wand-magic-sparkles text-[8px] text-amber-500"></i><span>AI Support</span></span>`;
         }
         if (data.sop_title) {
             badgeHtml += `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-teal-50 text-teal-700 border border-teal-200 truncate max-w-[200px]" title="${escapeHtml(data.sop_title)}">SOP: ${escapeHtml(data.sop_title)}</span>`;
