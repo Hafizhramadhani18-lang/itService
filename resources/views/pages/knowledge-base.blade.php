@@ -24,7 +24,22 @@
         </div>
 
         @if(Auth::user()->isTeknisi() || Auth::user()->isAdmin())
-        <div class="flex items-center space-x-2.5 flex-shrink-0">
+        <div class="flex flex-wrap items-center gap-2 flex-shrink-0">
+            <!-- Tab Switcher Opsi A: AI Support (Default Full) & Kelola SOP -->
+            <div class="inline-flex items-center p-1 rounded-xl bg-slate-200/70 border border-slate-200 text-xs font-bold">
+                <button type="button" id="tab-btn-ai" onclick="switchKnowledgeTab('ai')"
+                        class="px-3 py-1.5 rounded-lg bg-[#0e1a2b] text-white shadow-2xs transition cursor-pointer flex items-center space-x-1.5">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[10px] text-teal-400"></i>
+                    <span>AI Support</span>
+                </button>
+                <button type="button" id="tab-btn-sop" onclick="switchKnowledgeTab('sop')"
+                        class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center space-x-1.5">
+                    <i class="fa-solid fa-book-bookmark text-[10px]"></i>
+                    <span>Kelola SOP</span>
+                    <span class="px-1.5 py-0.2 rounded-full text-[9px] bg-slate-300/70 text-slate-700 font-black">{{ $guides->count() }}</span>
+                </button>
+            </div>
+
             <a href="{{ route('knowledge.create') }}" 
                class="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-xs transition flex items-center space-x-1.5 flex-shrink-0 whitespace-nowrap cursor-pointer">
                 <i class="fa-solid fa-plus text-[10px]"></i>
@@ -42,9 +57,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0">
         
         <!-- ============================================================== -->
-        <!-- KOLOM KIRI: RUANG KERJA ASISTEN AI INTERAKTIF (GEMINI AI)      -->
+        <!-- PANEL 1 (DEFAULT FULL-WIDTH): RUANG KERJA AI SUPPORT           -->
         <!-- ============================================================== -->
-        <div class="{{ Auth::user()->isPegawai() ? 'lg:col-span-12' : 'lg:col-span-7 xl:col-span-8' }} flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
+        <div id="panel-ai-support" class="lg:col-span-12 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
             
             <!-- Workspace Top Bar -->
             <div class="px-5 py-3.5 bg-[#0e1a2b] text-white flex items-center justify-between border-b border-slate-800 flex-shrink-0">
@@ -247,9 +262,9 @@
 
         @if(Auth::user()->isTeknisi() || Auth::user()->isAdmin())
         <!-- ============================================================== -->
-        <!-- KOLOM KANAN (4-5 Kolom): KATALOG DOKUMEN SOP RESMI PLTU        -->
+        <!-- PANEL 2 (TAB KELOLA SOP): KATALOG DOKUMEN SOP RESMI PLTU       -->
         <!-- ============================================================== -->
-        <div class="lg:col-span-5 xl:col-span-4 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
+        <div id="panel-kelola-sop" class="hidden lg:col-span-12 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
             
             <!-- SOP Card Header & Search (Desain Ringkas & Rapi) -->
             <div class="p-3.5 bg-slate-50/90 border-b border-slate-200/90 space-y-2 flex-shrink-0">
@@ -326,7 +341,7 @@
                     'jaringan' => false,
                 ];
             @endphp
-            <div id="sop-catalog-list" class="flex-1 space-y-2.5 overflow-y-auto p-3 bg-slate-50/50">
+            <div id="sop-catalog-list" class="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 content-start overflow-y-auto p-4 bg-slate-50/50">
                 @forelse($guides as $guide)
                 @php
                     $guideSearchable = strtolower($guide->judul . ' ' . $guide->kategori . ' ' . $guide->tag . ' ' . $guide->pengantar);
@@ -714,7 +729,28 @@
         }
     }
 
+    function switchKnowledgeTab(tab) {
+        const panelAi = document.getElementById('panel-ai-support');
+        const panelSop = document.getElementById('panel-kelola-sop');
+        const btnAi = document.getElementById('tab-btn-ai');
+        const btnSop = document.getElementById('tab-btn-sop');
+        if (!panelAi || !panelSop || !btnAi || !btnSop) return;
+
+        if (tab === 'sop') {
+            panelAi.classList.add('hidden');
+            panelSop.classList.remove('hidden');
+            btnSop.className = 'px-3 py-1.5 rounded-lg bg-[#0e1a2b] text-white shadow-2xs transition cursor-pointer flex items-center space-x-1.5';
+            btnAi.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center space-x-1.5';
+        } else {
+            panelSop.classList.add('hidden');
+            panelAi.classList.remove('hidden');
+            btnAi.className = 'px-3 py-1.5 rounded-lg bg-[#0e1a2b] text-white shadow-2xs transition cursor-pointer flex items-center space-x-1.5';
+            btnSop.className = 'px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition cursor-pointer flex items-center space-x-1.5';
+        }
+    }
+
     function askWorkspaceAi(promptText) {
+        switchKnowledgeTab('ai');
         const input = document.getElementById('workspace-user-input');
         if (input) {
             input.value = promptText;
