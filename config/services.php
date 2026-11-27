@@ -40,4 +40,10 @@ return [
         'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
     ],
 
+    'helpdesk' => [
+        'wa' => env('HELPDESK_WA', '6288221606761'),
+        'wa_display' => env('HELPDESK_WA_DISPLAY', '0882-2160-6761'),
+        'email' => env('HELPDESK_EMAIL', 'ramadhanihafizh7@gmail.com'),
+    ],
+
 ];

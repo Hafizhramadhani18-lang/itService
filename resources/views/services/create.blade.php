@@ -436,7 +436,7 @@
                             onclick="syncAndOpenEmailModal()" 
                             class="w-full flex items-center justify-center space-x-2 px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold transition cursor-pointer">
                         <i class="fa-solid fa-envelope text-xs text-teal-400"></i>
-                        <span>Lapor via Email (itsupport@s2p.co.id)</span>
+                        <span>Lapor via Email ({{ config('services.helpdesk.email', 'ramadhanihafizh7@gmail.com') }})</span>
                     </button>
                 </div>
             </div>
@@ -831,7 +831,7 @@ Demikian laporan ini kami sampaikan untuk dapat segera ditindaklanjuti. Terima k
         if (subjectEl) subjectEl.innerText = newSubject;
         if (bodyEl) bodyEl.value = newBody;
         if (mailtoBtn) {
-            mailtoBtn.href = `mailto:itsupport@s2p.co.id?subject=${encodeURIComponent(newSubject)}&body=${encodeURIComponent(newBody)}`;
+            mailtoBtn.href = `mailto:{{ config('services.helpdesk.email', 'ramadhanihafizh7@gmail.com') }}?subject=${encodeURIComponent(newSubject)}&body=${encodeURIComponent(newBody)}`;
         }
 
         triggerQuickEmailModal();

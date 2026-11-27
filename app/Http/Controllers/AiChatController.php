@@ -64,7 +64,7 @@ class AiChatController extends Controller
             // Tampilkan tombol bantuan teknisi & tiket hanya jika pertanyaan berkaitan dengan kendala IT / kantor
             if ($isItQuery) {
                 $waText = "Halo Helpdesk IT PT S2P PLTU Karangkandri,\n\nSaya telah berkonsultasi dengan Asisten AI terkait kendala:\n\"{$userMessage}\"\n\n- Pelapor: {$userName}\n- Divisi: {$userDivisi}\n- Status: Butuh bantuan teknisi lapangan.\n\nMohon bantuannya. Terima kasih.";
-                $payload['wa_url'] = 'https://wa.me/6281234567890?text=' . urlencode($waText);
+                $payload['wa_url'] = 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode($waText);
                 $payload['ticket_url'] = route('services.create', ['kendala' => $userMessage]);
             }
 
@@ -258,7 +258,7 @@ Aturan & Kemampuan Anda:
                     'Gunakan menu referensi dokumen SOP resmi di samping kanan untuk panduan standar.',
                     'Atau klik tombol WhatsApp di bawah jika membutuhkan kedatangan teknisi langsung ke ruangan Anda.'
                 ],
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo Helpdesk IT PT S2P, saya {$userName} dari divisi {$userDivisi} butuh bantuan."),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo Helpdesk IT PT S2P, saya {$userName} dari divisi {$userDivisi} butuh bantuan."),
                 'ticket_url' => route('services.create'),
             ];
         }
@@ -280,7 +280,7 @@ Aturan & Kemampuan Anda:
                     '**Gejala Mati Mendadak (Overheat)**: Jika PC menyala beberapa menit lalu mati sendiri, kipas pendingin processor (Heatsink Fan) kemungkinan kotor atau pasta pendingin telah kering.'
                 ],
                 'warning' => 'Jangan menyentuh komponen dalam komputer saat tangan basah atau kabel daya masih terhubung ke stop kontak PLN demi keselamatan kerja (K3 Listrik).',
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo Helpdesk IT PT S2P,\n\nSaya membutuhkan pengecekan teknisi untuk PC mati total/tidak menyala:\n- Pelapor: {$userName}\n- Divisi: {$userDivisi}\n- Keluhan: \"{$userMessage}\"\n\nMohon bantuannya."),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo Helpdesk IT PT S2P,\n\nSaya membutuhkan pengecekan teknisi untuk PC mati total/tidak menyala:\n- Pelapor: {$userName}\n- Divisi: {$userDivisi}\n- Keluhan: \"{$userMessage}\"\n\nMohon bantuannya."),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -300,7 +300,7 @@ Aturan & Kemampuan Anda:
                     '**Periksa Jack Audio 3.5mm**: Pastikan jack kabel audio tercolok pada port warna **Hijau (Audio Out)** di casing belakang/depan, bukan port merah muda (Mic).',
                     '**Restart Audio Service**: Buka RUN (Win + R), ketik `services.msc`, cari **Windows Audio**, klik kanan lalu pilih **Restart**.'
                 ],
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, kendala suara/audio komputer dari {$userName}"),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo IT Support, kendala suara/audio komputer dari {$userName}"),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -319,7 +319,7 @@ Aturan & Kemampuan Anda:
                     '**Cek Baterai (Perangkat Wireless)**: Jika menggunakan mouse tanpa kabel, ganti baterai AA/AAA dengan yang baru dan pastikan saklar switch di bawah mouse pada posisi ON.',
                     '**Tes di Device Manager**: Tekan **Win + X** lalu pilih **Device Manager**. Periksa apakah ada tanda seru kuning pada menu *Mice and other pointing devices*. Klik kanan lalu pilih **Scan for hardware changes**.'
                 ],
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, butuh penggantian mouse/keyboard untuk {$userName}"),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo IT Support, butuh penggantian mouse/keyboard untuk {$userName}"),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -341,7 +341,7 @@ Aturan & Kemampuan Anda:
                 ],
                 'cmd_title' => 'Perintah Reset DNS Windows',
                 'cmd' => 'ipconfig /flushdns && ipconfig /renew',
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support Jaringan, lapor koneksi internet lambat dari divisi {$userDivisi}"),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo IT Support Jaringan, lapor koneksi internet lambat dari divisi {$userDivisi}"),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -362,7 +362,7 @@ Aturan & Kemampuan Anda:
                     '**Tips Error #N/A**: Gunakan `=IFERROR(rumus, "-")` agar tampilan tabel tetap rapi jika data tidak ditemukan.'
                 ],
                 'warning' => 'Pastikan pemisah tanda rumus di Excel Anda (koma `,` atau titik koma `;`) sesuai pengaturan Regional Windows komputer Anda.',
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, saya butuh asistensi formula Excel dari divisi {$userDivisi}"),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo IT Support, saya butuh asistensi formula Excel dari divisi {$userDivisi}"),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -383,7 +383,7 @@ Aturan & Kemampuan Anda:
                     '**Win + E**: Membuka File Explorer dengan cepat.'
                 ],
                 'warning' => 'Selalu kunci layar (Win + L) saat meninggalkan komputer demi keamanan data operasional PLTU.',
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, konsultasi shortcut/keyboard dari {$userName}"),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo IT Support, konsultasi shortcut/keyboard dari {$userName}"),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -404,7 +404,7 @@ Aturan & Kemampuan Anda:
                 ],
                 'cmd_title' => 'Hard Reload Shortcut',
                 'cmd' => 'Ctrl + F5',
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode("Halo IT Support, bantuan web browser dari {$userName}"),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode("Halo IT Support, bantuan web browser dari {$userName}"),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -426,7 +426,7 @@ Aturan & Kemampuan Anda:
                 'cmd_title' => $matchedSop->judul_perintah,
                 'cmd' => $matchedSop->perintah_cmd,
                 'warning' => $matchedSop->peringatan,
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode($waText),
+                'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode($waText),
                 'ticket_url' => route('services.create', ['kendala' => $userMessage]),
             ];
         }
@@ -444,7 +444,7 @@ Aturan & Kemampuan Anda:
                 'Hubungi Helpdesk IT Support via Telepon Ext. 102 (Aktif 24/7).',
                 'Atau klik tombol hijau di bawah untuk terhubung langsung ke WhatsApp Teknisi dengan format laporan siap kirim.'
             ],
-            'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode($waText),
+            'wa_url' => 'https://wa.me/' . config('services.helpdesk.wa', '6288221606761') . '?text=' . urlencode($waText),
             'ticket_url' => route('services.create', ['kendala' => $userMessage]),
         ];
     }

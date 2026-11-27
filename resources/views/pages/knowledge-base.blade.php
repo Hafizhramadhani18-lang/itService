@@ -85,7 +85,7 @@
                             title="Bersihkan Percakapan">
                         <i class="fa-solid fa-rotate-right"></i>
                     </button>
-                    <a href="https://wa.me/6281234567890?text={{ urlencode('Halo Helpdesk IT PT S2P PLTU Karangkandri, saya butuh bantuan teknisi.') }}" 
+                    <a href="https://wa.me/{{ config('services.helpdesk.wa', '6288221606761') }}?text={{ urlencode('Halo Helpdesk IT PT S2P PLTU Karangkandri, saya butuh bantuan teknisi.') }}" 
                        target="_blank" 
                        class="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600/90 hover:bg-emerald-600 text-white text-[11px] font-bold transition shadow-xs">
                         <i class="fa-brands fa-whatsapp text-xs"></i>
@@ -246,9 +246,9 @@
                         <div class="flex items-center space-x-2 sm:space-x-3 text-slate-500">
                             <span class="flex items-center space-x-1"><i class="fa-solid fa-phone text-teal-600 text-[9px]"></i><span>Ext. 102</span></span>
                             <span>&bull;</span>
-                            <span class="flex items-center space-x-1"><i class="fa-brands fa-whatsapp text-emerald-600 text-[11px]"></i><span>0812-3456-7890</span></span>
+                            <span class="flex items-center space-x-1"><i class="fa-brands fa-whatsapp text-emerald-600 text-[11px]"></i><span>{{ config('services.helpdesk.wa_display', '0882-2160-6761') }}</span></span>
                             <span class="hidden sm:inline">&bull;</span>
-                            <span class="hidden sm:inline flex items-center space-x-1"><i class="fa-solid fa-envelope text-slate-400 text-[10px]"></i><span>itsupport@s2p.co.id</span></span>
+                            <span class="hidden sm:inline flex items-center space-x-1"><i class="fa-solid fa-envelope text-slate-400 text-[10px]"></i><span>{{ config('services.helpdesk.email', 'ramadhanihafizh7@gmail.com') }}</span></span>
                         </div>
                         <a href="{{ route('services.create') }}" class="font-extrabold text-teal-700 hover:text-teal-900 underline flex items-center space-x-1">
                             <span>Buat Tiket Servis</span>
@@ -870,7 +870,7 @@
 
         let actionsHtml = '';
         if (data.wa_url || data.ticket_url) {
-            const waUrl = data.wa_url || 'https://wa.me/6281234567890';
+            const waUrl = data.wa_url || 'https://wa.me/{{ config("services.helpdesk.wa", "6288221606761") }}';
             const ticketUrl = data.ticket_url || '{{ route("services.create") }}';
             actionsHtml = `
                 <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-2">

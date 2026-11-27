@@ -239,11 +239,11 @@
                 <div class="text-[11px] text-slate-500 space-y-1.5 pt-1">
                     <div class="flex items-center space-x-1.5">
                         <i class="fa-brands fa-whatsapp text-emerald-600 text-xs"></i>
-                        <span>WA Helpdesk: <a href="https://wa.me/6281234567890?text=Halo%20IT%20Support%20PT%20S2P,%20saya%20butuh%20bantuan%20teknisi." target="_blank" class="font-bold text-emerald-700 hover:underline">0812-3456-7890</a></span>
+                        <span>WA Helpdesk: <a href="https://wa.me/{{ config('services.helpdesk.wa', '6288221606761') }}?text=Halo%20IT%20Support%20PT%20S2P,%20saya%20butuh%20bantuan%20teknisi." target="_blank" class="font-bold text-emerald-700 hover:underline">{{ config('services.helpdesk.wa_display', '0882-2160-6761') }}</a></span>
                     </div>
                     <div class="flex items-center space-x-1.5">
                         <i class="fa-solid fa-envelope text-teal-600 text-xs"></i>
-                        <span>Email: <a href="javascript:void(0)" onclick="triggerQuickEmailModal()" class="font-bold text-teal-800 hover:underline">itsupport@s2p.co.id</a></span>
+                        <span>Email: <a href="javascript:void(0)" onclick="triggerQuickEmailModal()" class="font-bold text-teal-800 hover:underline">{{ config('services.helpdesk.email', 'ramadhanihafizh7@gmail.com') }}</a></span>
                     </div>
                     <div class="flex items-center space-x-1.5">
                         <i class="fa-solid fa-location-dot text-slate-400 text-xs"></i>

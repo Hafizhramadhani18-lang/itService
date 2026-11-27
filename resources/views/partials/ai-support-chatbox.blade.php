@@ -58,7 +58,7 @@
             <!-- Header Action Buttons -->
             <div class="flex items-center space-x-1">
                 <!-- Tombol Chat WA Helpdesk Langsung -->
-                <a href="https://wa.me/6281234567890?text=Halo%20IT%20Support%20PT%20S2P%20Karangkandri,%20saya%20butuh%20bantuan%20teknisi." 
+                <a href="https://wa.me/{{ config('services.helpdesk.wa', '6288221606761') }}?text=Halo%20IT%20Support%20PT%20S2P%20Karangkandri,%20saya%20butuh%20bantuan%20teknisi." 
                    target="_blank" 
                    class="p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-emerald-900/40 transition" 
                    title="Buka WhatsApp Helpdesk">
@@ -187,7 +187,7 @@
             <div class="flex items-center justify-between text-[9.5px] text-slate-400 px-1 pt-0.5">
                 <div class="flex items-center space-x-1 text-slate-500">
                     <i class="fa-solid fa-phone text-teal-600 text-[8px]"></i>
-                    <span>Ext. 102 &bull; WA: 0812-3456-7890</span>
+                    <span>Ext. 102 &bull; WA: {{ config('services.helpdesk.wa_display', '0882-2160-6761') }}</span>
                 </div>
                 <button type="button" onclick="triggerQuickEmailModal()" class="text-teal-700 hover:text-teal-900 font-bold underline cursor-pointer flex items-center space-x-1">
                     <i class="fa-regular fa-envelope text-[9px]"></i>
@@ -225,7 +225,7 @@
             <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-slate-700 font-mono text-[11px]">
                 <div class="flex justify-between border-b border-slate-200/60 pb-1">
                     <span class="font-bold text-slate-500">Kepada:</span>
-                    <span class="font-bold text-teal-800">itsupport@s2p.co.id</span>
+                    <span class="font-bold text-teal-800">{{ config('services.helpdesk.email', 'ramadhanihafizh7@gmail.com') }}</span>
                 </div>
                 <div class="flex justify-between border-b border-slate-200/60 pb-1">
                     <span class="font-bold text-slate-500">Subjek:</span>
@@ -264,7 +264,7 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
                     Tutup
                 </button>
                 <a id="btn-open-mailto" 
-                   href="mailto:itsupport@s2p.co.id?subject=%5BIT%20SERVICE%5D%20Laporan%20Gangguan%20-%20{{ urlencode(Auth::user()->divisi ?? 'Operasional') }}&body={{ urlencode("Yth. Tim IT Support PT S2P,\n\nMohon bantuan penanganan kendala:\n- Pelapor: " . (Auth::user()->name ?? 'Karyawan') . "\n- Divisi: " . (Auth::user()->divisi ?? 'PLTU') . "\n- Lokasi: Ruang Kerja\n- Kendala: ") }}" 
+                   href="mailto:{{ config('services.helpdesk.email', 'ramadhanihafizh7@gmail.com') }}?subject=%5BIT%20SERVICE%5D%20Laporan%20Gangguan%20-%20{{ urlencode(Auth::user()->divisi ?? 'Operasional') }}&body={{ urlencode("Yth. Tim IT Support PT S2P,\n\nMohon bantuan penanganan kendala:\n- Pelapor: " . (Auth::user()->name ?? 'Karyawan') . "\n- Divisi: " . (Auth::user()->divisi ?? 'PLTU') . "\n- Lokasi: Ruang Kerja\n- Kendala: ") }}" 
                    class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[#0f766e] hover:bg-[#115e59] text-white text-xs font-extrabold transition shadow-xs cursor-pointer">
                     <i class="fa-solid fa-paper-plane text-xs"></i>
                     <span>Buka di Email</span>
@@ -516,7 +516,7 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
 
         let dispatchFooterHtml = '';
         if (data.wa_url || data.ticket_url) {
-            const waUrl = data.wa_url || 'https://wa.me/6281234567890';
+            const waUrl = data.wa_url || 'https://wa.me/{{ config("services.helpdesk.wa", "6288221606761") }}';
             const ticketUrl = data.ticket_url || '{{ route("services.create") }}';
             dispatchFooterHtml = `
                 <div class="pt-2 border-t border-slate-100">
@@ -582,7 +582,7 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
             reply: matched ? `Berdasarkan SOP **${matched.title}**, berikut diagnosa dan langkah penanganan mandiri:` : `Terima kasih atas laporan Anda. Untuk kendala *"${userText}"*, tim teknisi IT Support siap membantu Anda langsung.`,
             sop_title: matched ? matched.title : null,
             steps: matched ? matched.steps : ['Periksa sambungan kabel dan daya perangkat.', 'Hubungi Helpdesk IT Support via Telepon Ext. 102 atau WhatsApp siaga.'],
-            wa_url: "https://wa.me/6281234567890?text=" + encodeURIComponent("Halo IT Support PT S2P, saya butuh penanganan kendala: " + userText),
+            wa_url: "https://wa.me/{{ config('services.helpdesk.wa', '6288221606761') }}?text=" + encodeURIComponent("Halo IT Support PT S2P, saya butuh penanganan kendala: " + userText),
             ticket_url: "{{ route('services.create') }}?kendala=" + encodeURIComponent(userText)
         };
 
