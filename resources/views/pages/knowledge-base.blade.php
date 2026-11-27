@@ -13,13 +13,13 @@
                 <span>Ruang Kerja Asisten AI IT Support PT S2P PLTU Karangkandri</span>
             </div>
             <h1 class="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
-                <span>{{ Auth::user()->isPegawai() ? 'Panduan Mandiri Pegawai' : 'Basis Pengetahuan & SOP Troubleshooting' }}</span>
+                <span>{{ Auth::user()->isPegawai() ? 'Asisten Virtual AI (Gemini)' : 'Asisten AI & Katalog SOP IT' }}</span>
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-black bg-emerald-100 text-emerald-800 border border-emerald-300">Online 24/7</span>
             </h1>
             <p class="text-xs text-slate-500 mt-0.5 font-medium">
                 {{ Auth::user()->isPegawai() 
-                    ? 'Tanyakan kendala Anda ke Asisten Virtual AI atau ikuti panduan mandiri resmi di samping.' 
-                    : 'Pusat interaksi Asisten AI & katalog standar operasional prosedur penanganan gangguan IT PT S2P PLTU Karangkandri.' }}
+                    ? 'Tanyakan apa saja kepada Asisten AI Gemini—mulai dari keseharian, hobi, pekerjaan, projek, hingga kendala IT kantor.' 
+                    : 'Pusat interaksi Asisten AI (Gemini) & katalog standar operasional prosedur penanganan gangguan IT PT S2P PLTU Karangkandri.' }}
             </p>
         </div>
 
@@ -42,9 +42,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch flex-1 min-h-0">
         
         <!-- ============================================================== -->
-        <!-- KOLOM KIRI (7-8 Kolom): RUANG KERJA ASISTEN AI IT INTERAKTIF  -->
+        <!-- KOLOM KIRI: RUANG KERJA ASISTEN AI INTERAKTIF (GEMINI AI)      -->
         <!-- ============================================================== -->
-        <div class="lg:col-span-7 xl:col-span-8 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
+        <div class="{{ Auth::user()->isPegawai() ? 'lg:col-span-12' : 'lg:col-span-7 xl:col-span-8' }} flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden h-full">
             
             <!-- Workspace Top Bar -->
             <div class="px-5 py-3.5 bg-[#0e1a2b] text-white flex items-center justify-between border-b border-slate-800 flex-shrink-0">
@@ -57,10 +57,10 @@
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <h2 class="font-extrabold text-xs sm:text-sm text-white">Asisten Virtual IT Support AI</h2>
-                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Cerdas & Aktif</span>
+                            <h2 class="font-extrabold text-xs sm:text-sm text-white">Asisten Virtual AI (Gemini)</h2>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Cerdas &amp; Aktif</span>
                         </div>
-                        <p class="text-[10px] text-slate-300">Siap menjawab semua kendala IT, troubleshooting, & produktivitas kerja</p>
+                        <p class="text-[10px] text-slate-300">Siap menjawab pertanyaan keseharian, hobi, pekerjaan, projek, &amp; kendala IT</p>
                     </div>
                 </div>
 
@@ -97,7 +97,7 @@
                                     <span class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex-shrink-0">Online 24/7</span>
                                 </div>
                                 <p class="text-xs text-slate-300 leading-relaxed">
-                                    Saya <strong>Asisten Cerdas IT Support PT S2P</strong>. Tanyakan kendala perangkat, jaringan PLTU, akun domain, atau konsultasikan rumus Excel & prosedur kerja operasional:
+                                    Saya <strong>Asisten AI (Google Gemini) PT S2P</strong>. Anda bebas bertanya <strong>apa saja</strong>—mulai dari obrolan keseharian, hobi, ide projek, pekerjaan, rumus Excel, hingga kendala IT kantor:
                                 </p>
                             </div>
                         </div>
@@ -245,6 +245,7 @@
 
         </div>
 
+        @if(Auth::user()->isTeknisi() || Auth::user()->isAdmin())
         <!-- ============================================================== -->
         <!-- KOLOM KANAN (4-5 Kolom): KATALOG DOKUMEN SOP RESMI PLTU        -->
         <!-- ============================================================== -->
@@ -439,6 +440,7 @@
             </div>
 
         </div>
+        @endif
 
     </div>
 
@@ -699,8 +701,11 @@
         }
     }
 
+    let workspaceChatHistory = [];
+
     function clearWorkspaceChat() {
         if (!confirm('Bersihkan riwayat percakapan asisten AI?')) return;
+        workspaceChatHistory = [];
         const msgContainer = document.getElementById('workspace-chat-messages');
         const firstBubble = msgContainer.firstElementChild;
         msgContainer.innerHTML = '';
@@ -744,12 +749,17 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ message: text, history: workspaceChatHistory })
             });
 
             const data = await response.json();
 
             if (data.success) {
+                if (data.reply) {
+                    workspaceChatHistory.push({ role: 'user', text: text });
+                    workspaceChatHistory.push({ role: 'model', text: data.reply });
+                    if (workspaceChatHistory.length > 16) workspaceChatHistory = workspaceChatHistory.slice(-16);
+                }
                 appendBotResponse(data);
             } else {
                 appendErrorMessage('Maaf, asisten AI sedang sibuk. Silakan coba beberapa saat lagi.');
@@ -822,20 +832,25 @@
             `;
         }
 
-        let actionsHtml = `
-            <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-2">
-                <a href="${data.wa_url}" target="_blank" 
-                   class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition shadow-xs">
-                    <i class="fa-brands fa-whatsapp text-xs"></i>
-                    <span>Hubungi Teknisi Lapangan</span>
-                </a>
-                <a href="${data.ticket_url}" 
-                   class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] transition">
-                    <i class="fa-solid fa-ticket text-xs"></i>
-                    <span>Buat Tiket Servis</span>
-                </a>
-            </div>
-        `;
+        let actionsHtml = '';
+        if (data.wa_url || data.ticket_url) {
+            const waUrl = data.wa_url || 'https://wa.me/6281234567890';
+            const ticketUrl = data.ticket_url || '{{ route("services.create") }}';
+            actionsHtml = `
+                <div class="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center gap-2">
+                    <a href="${waUrl}" target="_blank" 
+                       class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] transition shadow-xs">
+                        <i class="fa-brands fa-whatsapp text-xs"></i>
+                        <span>Hubungi Teknisi Lapangan</span>
+                    </a>
+                    <a href="${ticketUrl}" 
+                       class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] transition">
+                        <i class="fa-solid fa-ticket text-xs"></i>
+                        <span>Buat Tiket Servis</span>
+                    </a>
+                </div>
+            `;
+        }
 
         bubble.innerHTML = `
             <div class="w-8 h-8 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-xs">
@@ -845,7 +860,7 @@
                 <div class="flex items-center justify-between text-[10px] text-slate-400">
                     <span class="font-bold text-teal-800 flex items-center space-x-1">
                         <i class="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                        <span>${data.sop_title || 'Asisten IT AI'}</span>
+                        <span>${data.sop_title || (data.source === 'gemini_ai' ? 'Gemini AI' : 'Asisten AI')}</span>
                     </span>
                     <span>Baru saja</span>
                 </div>

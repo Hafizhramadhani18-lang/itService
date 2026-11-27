@@ -11,20 +11,22 @@ use Illuminate\Support\Facades\Log;
 class AiChatController extends Controller
 {
     /**
-     * Endpoint API Interaksi Asisten Virtual IT Support AI (Gemini + Local RAG SOP).
+     * Endpoint API Interaksi Asisten Virtual AI (Google Gemini AI + Local RAG SOP).
      */
     public function chat(Request $request)
     {
         $request->validate([
-            'message' => 'required|string|max:1000',
+            'message' => 'required|string|max:2000',
+            'history' => 'nullable|array|max:20',
         ]);
 
         $userMessage = trim($request->input('message'));
+        $history = $request->input('history', []);
         $user = Auth::user();
         $userName = $user ? $user->name : 'Karyawan PLTU';
         $userDivisi = $user ? ($user->divisi ?: 'Operasional PLTU') : 'Operasional PLTU';
 
-        // 1. Ambil seluruh SOP yang relevan dari database KnowledgeBase (RAG Context)
+        // 1. Ambil SOP yang relevan dari database KnowledgeBase (RAG Context untuk pertanyaan IT/PLTU)
         $sopQuery = KnowledgeBase::where('status', 'Terbit');
         if ($user && $user->isPegawai()) {
             $sopQuery->whereIn('target_audience', ['all', 'pegawai']);
@@ -33,23 +35,23 @@ class AiChatController extends Controller
 
         // Cari SOP paling relevan dengan scoring kata kunci
         $matchedSop = $this->findBestMatchingSop($userMessage, $availableSops);
+        $isItQuery = $matchedSop !== null || $this->isItSupportQuery($userMessage);
 
-        // 2. Cek apakah ada konfigurasi Google Gemini API
+        // 2. Panggil Google Gemini API
         $apiKey = config('services.gemini.api_key') ?: env('GEMINI_API_KEY');
-        $model = config('services.gemini.model') ?: 'gemini-1.5-flash';
+        $model = config('services.gemini.model') ?: 'gemini-3.5-flash-lite';
 
         $geminiResponse = null;
         if (!empty($apiKey)) {
-            $geminiResponse = $this->callGeminiApi($apiKey, $model, $userMessage, $userName, $userDivisi, $matchedSop, $availableSops);
+            $geminiResponse = $this->callGeminiApi($apiKey, $model, $userMessage, $history, $userName, $userDivisi, $matchedSop, $isItQuery);
         }
 
-        // 3. Jika Gemini berhasil, gunakan jawaban Gemini
+        // 3. Jika Gemini berhasil, kembalikan jawaban Gemini AI yang cerdas
         if (!empty($geminiResponse)) {
-            $waText = "Halo Helpdesk IT PT S2P PLTU Karangkandri,\n\nSaya telah berkonsultasi dengan Asisten AI terkait kendala:\n\"{$userMessage}\"\n\n- Pelapor: {$userName}\n- Divisi: {$userDivisi}\n- Status: Butuh bantuan teknisi lapangan.\n\nMohon bantuannya. Terima kasih.";
-
-            return response()->json([
+            $payload = [
                 'success' => true,
                 'source' => 'gemini_ai',
+                'is_it_query' => $isItQuery,
                 'reply' => $geminiResponse,
                 'sop_title' => $matchedSop ? $matchedSop->judul : null,
                 'sop_kategori' => $matchedSop ? $matchedSop->kategori : null,
@@ -57,13 +59,43 @@ class AiChatController extends Controller
                 'cmd_title' => $matchedSop ? $matchedSop->judul_perintah : null,
                 'cmd' => $matchedSop ? $matchedSop->perintah_cmd : null,
                 'warning' => $matchedSop ? $matchedSop->peringatan : null,
-                'wa_url' => 'https://wa.me/6281234567890?text=' . urlencode($waText),
-                'ticket_url' => route('services.create', ['kendala' => $userMessage]),
-            ]);
+            ];
+
+            // Tampilkan tombol bantuan teknisi & tiket hanya jika pertanyaan berkaitan dengan kendala IT / kantor
+            if ($isItQuery) {
+                $waText = "Halo Helpdesk IT PT S2P PLTU Karangkandri,\n\nSaya telah berkonsultasi dengan Asisten AI terkait kendala:\n\"{$userMessage}\"\n\n- Pelapor: {$userName}\n- Divisi: {$userDivisi}\n- Status: Butuh bantuan teknisi lapangan.\n\nMohon bantuannya. Terima kasih.";
+                $payload['wa_url'] = 'https://wa.me/6281234567890?text=' . urlencode($waText);
+                $payload['ticket_url'] = route('services.create', ['kendala' => $userMessage]);
+            }
+
+            return response()->json($payload);
         }
 
-        // 4. Fallback Cerdas: Menggunakan Smart Local SOP Engine dari Database
+        // 4. Fallback Cerdas: Menggunakan Smart Local SOP Engine dari Database jika API tidak terjangkau
         return response()->json($this->buildLocalSopResponse($userMessage, $userName, $userDivisi, $matchedSop));
+    }
+
+    /**
+     * Deteksi apakah pertanyaan berkaitan dengan kendala IT / Service Desk.
+     */
+    private function isItSupportQuery(string $query): bool
+    {
+        $lower = mb_strtolower($query);
+        $itKeywords = [
+            'printer', 'cetak', 'print', 'tinta', 'toner', 'paper jam', 'spooler',
+            'wifi', 'wi-fi', 'lan', 'internet', 'jaringan', 'kabel', 'ip', 'dns', 'ping', 'koneksi',
+            'komputer', 'pc', 'laptop', 'monitor', 'layar', 'bluescreen', 'bsod', 'hang', 'lambat', 'lemot',
+            'password', 'kata sandi', 'akun', 'login', 'domain', 'outlook', 'email', 'zimbra',
+            'sap', 'maximo', 'erp', 'proyektor', 'projector', 'hdmi', 'vga',
+            'tiket', 'servis', 'teknisi', 'helpdesk', 'sop', 'perangkat', 'error', 'gangguan', 'excel', 'vlookup'
+        ];
+
+        foreach ($itKeywords as $kw) {
+            if (preg_match('/\b' . preg_quote($kw, '/') . '\b/u', $lower)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -122,58 +154,71 @@ class AiChatController extends Controller
             }
         }
 
-        return $highestScore >= 4 ? $bestSop : null;
+        return $highestScore >= 8 ? $bestSop : null;
     }
 
     /**
-     * Panggil API Google Gemini dengan prompt berlandaskan SOP (RAG).
+     * Panggil API Google Gemini dengan kemampuan AI umum + konteks SOP PLTU (jika relevan).
      */
-    private function callGeminiApi(string $apiKey, string $model, string $userMessage, string $userName, string $userDivisi, $matchedSop, $allSops): ?string
+    private function callGeminiApi(string $apiKey, string $model, string $userMessage, array $history, string $userName, string $userDivisi, $matchedSop, bool $isItQuery): ?string
     {
         try {
-            $contextText = "Berikut adalah SOP Resmi IT Support PT Sumber Segara Primadaya (S2P) PLTU Karangkandri Cilacap:\n\n";
+            $systemPrompt = "Anda adalah Asisten AI serba bisa yang cerdas, ramah, dan membantu di lingkungan PT Sumber Segara Primadaya (S2P) - PLTU Karangkandri Cilacap, ditenagai oleh Google Gemini.
+Pengguna saat ini adalah: {$userName} (Divisi: {$userDivisi}).
+
+Aturan & Kemampuan Anda:
+1. Anda dapat menjawab **SEMUA JENIS PERTANYAAN** layaknya AI modern pada umumnya: mulai dari obrolan keseharian, hobi, ide kreatif, pekerjaan kantor, manajemen projek, pemrograman/coding, penulisan dokumen/email, matematika, Excel, kesehatan, kuliner, hingga pengetahuan umum apa pun. Jangan pernah menolak pertanyaan non-IT atau membatasi diri hanya pada topik SOP.
+2. Jika pengguna bertanya tentang kendala teknis IT atau sistem kantor PLTU (printer, LAN/Wi-Fi, PC lambat, password domain, Outlook, SAP/Maximo, proyektor), gunakan referensi SOP resmi IT PT S2P jika tersedia dan berikan panduan langkah demi langkah yang praktis.
+3. Jawab dengan bahasa Indonesia yang natural, hangat, jelas, mudah dipahami, dan terstruktur rapi (gunakan poin-poin atau penomoran bila perlu). Sesuaikan nada bicara dengan konteks: santai/akrab untuk topik keseharian & hobi, profesional & solutif untuk topik pekerjaan/projek/IT.";
+
             if ($matchedSop) {
-                $contextText .= "--- SOP UTAMA ---\n";
-                $contextText .= "Judul: {$matchedSop->judul}\n";
-                $contextText .= "Kategori: {$matchedSop->kategori}\n";
-                $contextText .= "Pengantar: {$matchedSop->pengantar}\n";
+                $sopContext = "\n\n[REFERENSI SOP RESMI IT PT S2P YANG RELEVAN]:\n";
+                $sopContext .= "Judul: {$matchedSop->judul} ({$matchedSop->kategori})\n";
+                $sopContext .= "Pengantar: {$matchedSop->pengantar}\n";
                 if (!empty($matchedSop->langkah_langkah)) {
-                    $contextText .= "Langkah-langkah:\n" . implode("\n- ", (array)$matchedSop->langkah_langkah) . "\n";
+                    $sopContext .= "Langkah-langkah:\n- " . implode("\n- ", (array)$matchedSop->langkah_langkah) . "\n";
                 }
                 if (!empty($matchedSop->perintah_cmd)) {
-                    $contextText .= "Perintah CMD: {$matchedSop->perintah_cmd}\n";
+                    $sopContext .= "Perintah CMD: {$matchedSop->perintah_cmd}\n";
                 }
                 if (!empty($matchedSop->peringatan)) {
-                    $contextText .= "Peringatan K3/Sistem: {$matchedSop->peringatan}\n";
+                    $sopContext .= "Peringatan K3/Sistem: {$matchedSop->peringatan}\n";
                 }
-            } else {
-                $contextText .= "SOP tersedia mencakup: Printer, Jaringan LAN/Wi-Fi, Komputer Hang/Bluescreen, Reset Password Domain, Outlook/Email, SAP/Maximo PLTU, Proyektor Ruang Rapat.\n";
+                $systemPrompt .= $sopContext;
+            } elseif ($isItQuery) {
+                $systemPrompt .= "\n\nCatatan: Jika kendala teknis memerlukan penanganan fisik langsung di ruangan, Anda boleh menyarankan pengguna membuat Tiket Servis atau menghubungi Helpdesk IT.";
             }
 
-            $systemPrompt = "Anda adalah Asisten Virtual AI IT Support cerdas untuk PT Sumber Segara Primadaya (S2P) - PLTU Karangkandri Cilacap.
-Tugas Anda adalah:
-1. Menjawab pertanyaan pengguna ({$userName} dari divisi {$userDivisi}) mengenai kendala perangkat IT, software, sistem, jaringan, maupun pertanyaan umum IT (seperti rumus Excel/Word, shortcut Windows, troubleshooting hardware, tips produktivitas kantor, dsb).
-2. Jika pertanyaan berkaitan dengan operasional atau SOP PLTU (printer, LAN, domain, akun PLTU, SAP/Maximo, dsb), prioritaskan rujukan SOP resmi yang terlampir.
-3. Jawab dengan bahasa Indonesia yang ramah, sopan, jelas, terstruktur (gunakan bullet points atau penomoran 1, 2, 3), serta berikan solusi langsung yang aplikatif.
-4. Di bagian akhir, tambahkan catatan ramah bahwa jika kendala memerlukan penanganan fisik di tempat, pengguna dapat membuat Tiket Servis atau menghubungi Helpdesk IT via WhatsApp (0812-3456-7890).";
+            // Bangun riwayat percakapan multi-turn
+            $contents = [];
+            foreach (array_slice($history, -10) as $turn) {
+                if (!is_array($turn) || empty($turn['text'])) {
+                    continue;
+                }
+                $role = ($turn['role'] ?? 'user') === 'model' ? 'model' : 'user';
+                $contents[] = [
+                    'role' => $role,
+                    'parts' => [['text' => mb_substr(trim((string) $turn['text']), 0, 2000)]],
+                ];
+            }
+
+            // Tambahkan pesan terbaru pengguna
+            $contents[] = [
+                'role' => 'user',
+                'parts' => [['text' => $userMessage]],
+            ];
 
             $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
-            $response = Http::timeout(8)->post($url, [
-                'contents' => [
-                    [
-                        'role' => 'user',
-                        'parts' => [
-                            [
-                                'text' => "{$systemPrompt}\n\n[DOKUMEN SOP REFERENSI]:\n{$contextText}\n\n[PERTANYAAN PENGGUNA ({$userName})]:\n\"{$userMessage}\""
-                            ]
-                        ]
-                    ]
+            $response = Http::timeout(25)->post($url, [
+                'systemInstruction' => [
+                    'parts' => [['text' => $systemPrompt]],
                 ],
+                'contents' => $contents,
                 'generationConfig' => [
-                    'temperature' => 0.4,
-                    'maxOutputTokens' => 800,
-                ]
+                    'temperature' => 0.7,
+                    'maxOutputTokens' => 2048,
+                ],
             ]);
 
             if ($response->successful()) {

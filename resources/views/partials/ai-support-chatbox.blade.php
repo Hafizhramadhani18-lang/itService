@@ -86,10 +86,10 @@
         <!-- NOTIFICATION BANNER INFO -->
         <div class="bg-slate-50 border-b border-slate-100 px-3.5 py-1.5 flex items-center justify-between text-[10.5px] text-slate-600 flex-shrink-0">
             <div class="flex items-center space-x-1.5 truncate">
-                <i class="fa-solid fa-shield-halved text-teal-600 text-[11px] flex-shrink-0"></i>
-                <span class="truncate font-medium text-slate-700">Didukung SOP IT Resmi PLTU Cilacap</span>
+                <i class="fa-solid fa-wand-magic-sparkles text-teal-600 text-[11px] flex-shrink-0"></i>
+                <span class="truncate font-medium text-slate-700">Didukung Gemini AI &amp; SOP IT PLTU</span>
             </div>
-            <a href="{{ route('knowledge.base') }}" class="font-bold text-teal-700 hover:text-teal-900 underline flex-shrink-0 ml-2">Panduan &rarr;</a>
+            <a href="{{ route('knowledge.base') }}" class="font-bold text-teal-700 hover:text-teal-900 underline flex-shrink-0 ml-2">Layar Penuh &rarr;</a>
         </div>
 
         <!-- MESSAGES CONTAINER AREA -->
@@ -104,7 +104,7 @@
                     <div class="bg-white p-3 rounded-xl rounded-tl-sm border border-slate-200/90 shadow-2xs text-slate-800 leading-relaxed space-y-1">
                         <p class="font-bold text-slate-900 text-xs">Halo {{ Auth::user()->name ?? 'Bapak/Ibu' }}! 👋</p>
                         <p class="text-slate-600 text-[11px]">
-                            Saya <strong>Asisten Virtual IT Support PT S2P</strong>. Silakan pilih topik kendala atau ketik keluhan Anda untuk diagnosa mandiri cepat sesuai SOP PLTU Karangkandri:
+                            Saya <strong>Asisten Virtual AI (Gemini) PT S2P</strong>. Anda dapat bertanya <strong>apa saja</strong>—mulai dari keseharian, hobi, pekerjaan, projek, hingga kendala IT kantor—atau pilih topik cepat di bawah:
                         </p>
                     </div>
 
@@ -174,7 +174,7 @@
             <form onsubmit="handleAIChatSubmit(event)" class="flex items-center space-x-1.5 bg-slate-50/80 hover:bg-white focus-within:bg-white rounded-xl border border-slate-200 focus-within:border-teal-600 focus-within:ring-2 focus-within:ring-teal-500/20 px-2.5 py-1 transition-all duration-200 shadow-2xs">
                 <input type="text" 
                        id="ai-chat-input" 
-                       placeholder="Ketik kendala Anda (mis: printer offline)..." 
+                       placeholder="Tanya apa saja atau ketik kendala IT Anda..." 
                        autocomplete="off"
                        class="flex-1 text-xs bg-transparent border-0 outline-none placeholder:text-slate-400 text-slate-800 py-1">
                 <button type="submit" 
@@ -389,6 +389,8 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
         processUserChat(query);
     }
 
+    let aiChatHistory = [];
+
     function processUserChat(userText) {
         const container = document.getElementById('ai-chat-messages');
         const indicator = document.getElementById('ai-typing-indicator');
@@ -420,7 +422,7 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'Accept': 'application/json',
             },
-            body: JSON.stringify({ message: userText })
+            body: JSON.stringify({ message: userText, history: aiChatHistory })
         })
         .then(res => {
             if (!res.ok) throw new Error('Network error');
@@ -428,6 +430,11 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
         })
         .then(data => {
             if (indicator) indicator.classList.add('hidden');
+            if (data.success && data.reply) {
+                aiChatHistory.push({ role: 'user', text: userText });
+                aiChatHistory.push({ role: 'model', text: data.reply });
+                if (aiChatHistory.length > 16) aiChatHistory = aiChatHistory.slice(-16);
+            }
             renderBotResponse(data, userText, timeNow);
         })
         .catch(err => {
@@ -453,8 +460,9 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
             badgeHtml += `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-teal-50 text-teal-700 border border-teal-200 truncate max-w-[200px]" title="${escapeHtml(data.sop_title)}">SOP: ${escapeHtml(data.sop_title)}</span>`;
         }
 
-        // Parse formatted reply (markdown bold & line breaks)
+        // Parse formatted reply (markdown bold, italic, inline code & line breaks)
         let formattedReply = escapeHtml(data.reply || '')
+            .replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 rounded bg-slate-100 text-teal-800 font-mono text-[10px]">$1</code>')
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
             .replace(/\*(.*?)\*/g, '<em>$1</em>')
             .replace(/\n/g, '<br>');
@@ -506,8 +514,28 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
             `;
         }
 
-        const waUrl = data.wa_url || 'https://wa.me/6281234567890';
-        const ticketUrl = data.ticket_url || '{{ route("services.create") }}';
+        let dispatchFooterHtml = '';
+        if (data.wa_url || data.ticket_url) {
+            const waUrl = data.wa_url || 'https://wa.me/6281234567890';
+            const ticketUrl = data.ticket_url || '{{ route("services.create") }}';
+            dispatchFooterHtml = `
+                <div class="pt-2 border-t border-slate-100">
+                    <p class="text-[10px] text-slate-400 italic mb-2">Masih terkendala atau butuh teknisi lapangan?</p>
+                    <div class="flex flex-col sm:flex-row gap-1.5">
+                        <a href="${waUrl}" target="_blank" 
+                           class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
+                            <i class="fa-brands fa-whatsapp text-xs"></i>
+                            <span>Chat WA Teknisi</span>
+                        </a>
+                        <a href="${ticketUrl}" 
+                           class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
+                            <i class="fa-solid fa-ticket text-xs"></i>
+                            <span>Buat Tiket</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
 
         botBubble.innerHTML = `
             <div class="w-7 h-7 rounded-xl bg-teal-800 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-2xs">
@@ -523,21 +551,7 @@ Demikian laporan ini kami sampaikan untuk dapat ditindaklanjuti. Terima kasih.</
                     ${cmdHtml}
                     ${warningHtml}
 
-                    <div class="pt-2 border-t border-slate-100">
-                        <p class="text-[10px] text-slate-400 italic mb-2">Masih terkendala atau butuh teknisi lapangan?</p>
-                        <div class="flex flex-col sm:flex-row gap-1.5">
-                            <a href="${waUrl}" target="_blank" 
-                               class="flex-1 inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition shadow-2xs">
-                                <i class="fa-brands fa-whatsapp text-xs"></i>
-                                <span>Chat WA Teknisi</span>
-                            </a>
-                            <a href="${ticketUrl}" 
-                               class="inline-flex items-center justify-center space-x-1 px-3 py-2 rounded-xl bg-[#0e1a2b] hover:bg-[#152438] text-white text-[11px] font-bold transition shadow-2xs">
-                                <i class="fa-solid fa-ticket text-xs"></i>
-                                <span>Buat Tiket</span>
-                            </a>
-                        </div>
-                    </div>
+                    ${dispatchFooterHtml}
                 </div>
                 <span class="text-[9px] text-slate-400 block pl-1">${timeNow}</span>
             </div>
